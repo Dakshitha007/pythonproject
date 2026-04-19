@@ -1,0 +1,879 @@
+{% extends 'base.html' %}
+
+{% block title %}Analysis - Space Debris Portal{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    /* ===== HEADER SECTION ===== */
+    .analysis-header {
+        text-align: center;
+        padding: 2rem 0 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+    }
+
+    .analysis-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #00e5ff;
+        margin: 0 0 0.5rem;
+        letter-spacing: 1px;
+    }
+
+    .analysis-header p {
+        color: #94a3b8;
+        margin: 0;
+    }
+
+    /* ===== UPLOAD SECTION (Combined Required Columns + Upload Form) ===== */
+    .upload-section {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 229, 255, 0.1);
+        transition: all 0.3s ease;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: center;
+    }
+
+    .upload-section:hover {
+        border-color: rgba(0, 229, 255, 0.5);
+        box-shadow: 0 12px 40px rgba(0, 229, 255, 0.15);
+    }
+
+    /* ===== REQUIRED COLUMNS INFO ===== */
+    .required-columns-info {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+        margin-bottom: 0;
+        height: 100%;
+    }
+
+    .required-columns-info .icon {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+        margin-top: 0.25rem;
+    }
+
+    .required-columns-info .content h3 {
+        color: #3b82f6;
+        font-size: 1rem;
+        margin: 0 0 0.75rem;
+        font-weight: 600;
+    }
+
+    .required-columns-info .content p {
+        color: #cbd5e1;
+        margin: 0 0 0.5rem;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .required-columns-info .content p:last-child {
+        margin-bottom: 0;
+    }
+
+    /* ===== UPLOAD FORM ===== */
+    .upload-form {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .upload-form h2 {
+        color: #00e5ff;
+        font-size: 1.3rem;
+        margin: 0;
+    }
+
+    .upload-form form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .upload-form input[type="file"] {
+        padding: 0.75rem;
+        background: rgba(0, 229, 255, 0.05);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-radius: 8px;
+        color: #e2e8f0;
+        margin: 0;
+        cursor: pointer;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .upload-form input[type="file"]::file-selector-button {
+        background: linear-gradient(135deg, #00e5ff, #3b82f6);
+        color: #0d0d0d;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .upload-form input[type="file"]::file-selector-button:hover {
+        transform: scale(1.05);
+    }
+
+    .upload-form button {
+        background: linear-gradient(135deg, #00e5ff, #3b82f6);
+        color: #0d0d0d;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-top: 0;
+        font-size: 1rem;
+        width: 100%;
+    }
+
+    .upload-form button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 229, 255, 0.4);
+    }
+
+    /* ===== MESSAGE STYLING ===== */
+    .message {
+        margin: 0;
+        padding: 1.25rem;
+        border-radius: 8px;
+        font-weight: 600;
+        line-height: 1.6;
+        white-space: pre-line;
+    }
+
+    .message.success {
+        color: #4ade80;
+        background: rgba(74, 222, 128, 0.1);
+        border-left: 4px solid #4ade80;
+        border: 1px solid rgba(74, 222, 128, 0.3);
+    }
+
+    .message.error {
+        color: #ff6b6b;
+        background: rgba(255, 107, 107, 0.1);
+        border: 1px solid rgba(255, 107, 107, 0.3);
+        border-left: 4px solid #ff6b6b;
+    }
+
+    /* ===== FILTER PANEL ===== */
+    .filter-panel {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 229, 255, 0.1);
+    }
+
+    .filter-panel h2 {
+        color: #00e5ff;
+        font-size: 1.3rem;
+        margin: 0 0 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-panel h2::before {
+        content: "⚙️";
+        font-size: 1.2rem;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-group label {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .filter-group select,
+    .filter-group input[type="number"] {
+        background: rgba(0, 229, 255, 0.05);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-radius: 8px;
+        padding: 0.75rem;
+        color: #e2e8f0;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .filter-group select:hover,
+    .filter-group select:focus,
+    .filter-group input[type="number"]:hover,
+    .filter-group input[type="number"]:focus {
+        background: rgba(0, 229, 255, 0.1);
+        border-color: rgba(0, 229, 255, 0.6);
+        outline: none;
+        box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
+    }
+
+    .filter-group select option {
+        background: #1e293b;
+        color: #e2e8f0;
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-buttons button {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    .filter-buttons .apply-btn {
+        background: linear-gradient(135deg, #00e5ff, #3b82f6);
+        color: #0d0d0d;
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .filter-buttons .apply-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 229, 255, 0.4);
+    }
+
+    .filter-buttons .reset-btn {
+        background: rgba(0, 229, 255, 0.1);
+        color: #00e5ff;
+        border: 1px solid rgba(0, 229, 255, 0.3);
+    }
+
+    .filter-buttons .reset-btn:hover {
+        background: rgba(0, 229, 255, 0.2);
+        border-color: rgba(0, 229, 255, 0.5);
+    }
+
+    /* ===== SUMMARY CARDS ===== */
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .summary-card {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0, 229, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 229, 255, 0.2);
+        border-color: rgba(0, 229, 255, 0.5);
+    }
+
+    .summary-card h2 {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 0 0 0.75rem;
+        font-weight: 500;
+    }
+
+    .summary-card p {
+        color: #00e5ff;
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    /* ===== CHARTS SECTION ===== */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .card {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 229, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0, 229, 255, 0.2);
+        border-color: rgba(0, 229, 255, 0.5);
+    }
+
+    .card h2 {
+        color: #00e5ff;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0 0 1.5rem;
+        text-align: center;
+    }
+
+    .chart-container {
+        height: 350px;
+        position: relative;
+        margin: 1.5rem 0;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-radius: 16px;
+        padding: 3rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+        margin: 2rem 0;
+    }
+
+    .empty-state p {
+        font-size: 1.1rem;
+        margin: 1rem 0;
+    }
+
+    /* ===== RESPONSIVE DESIGN ===== */
+    @media (max-width: 768px) {
+        .upload-section {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-buttons {
+            flex-direction: column;
+        }
+
+        .filter-buttons button {
+            width: 100%;
+        }
+
+        .summary-cards {
+            grid-template-columns: 1fr;
+        }
+
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .chart-container {
+            height: 300px;
+        }
+
+        .analysis-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .required-columns-info {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<!-- Analysis Header -->
+<div class="analysis-header">
+    <h1>Space Debris Analysis Dashboard</h1>
+    <p>Upload and analyze space debris datasets with interactive filtering and dynamic visualizations</p>
+</div>
+
+<!-- Upload Section (Required Columns + Upload Form Combined) -->
+<div class="upload-section">
+    <!-- Required Columns Info -->
+    <div class="required-columns-info">
+        <div class="icon">ℹ️</div>
+        <div class="content">
+            <h3>Required Columns for Analysis</h3>
+            <p><strong>Your CSV file must contain these columns:</strong></p>
+            <p>• <strong>object_type</strong> - Type of orbital object (PAYLOAD, DEBRIS, ROCKET BODY, etc.)</p>
+            <p>• <strong>country</strong> - Country of origin</p>
+            <p>• <strong>altitude_km</strong> - Orbital altitude in kilometers</p>
+        </div>
+    </div>
+
+    <!-- Upload Form -->
+    <div class="upload-form">
+        <h2>📤 Upload Dataset</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="file" accept=".csv" required>
+            <button type="submit">Upload & Analyze</button>
+        </form>
+        {% if message %}
+        <div class="message {% if message_type %}{{ message_type }}{% endif %}">{{ message }}</div>
+        {% endif %}
+    </div>
+</div>
+
+{% if has_data %}
+
+<!-- Filter Panel -->
+<form method="get" class="filter-panel" id="filterForm">
+    <h2>Filter Data</h2>
+    <div class="filter-grid">
+        <!-- Country Filter -->
+        <div class="filter-group">
+            <label for="countrySelect">Country</label>
+            <select id="countrySelect" name="country">
+                <option value="">All Countries</option>
+                {% for country in countries %}
+                <option value="{{ country }}" {% if request.GET.country == country %}selected{% endif %}>{{ country }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Object Type Filter -->
+        <div class="filter-group">
+            <label for="objectTypeSelect">Object Type</label>
+            <select id="objectTypeSelect" name="object_type">
+                <option value="">All Types</option>
+                {% for obj_type in object_types %}
+                <option value="{{ obj_type }}" {% if request.GET.object_type == obj_type %}selected{% endif %}>{{ obj_type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Altitude Min -->
+        <div class="filter-group">
+            <label for="minAltitude">Minimum Altitude (km)</label>
+            <input type="number" id="minAltitude" name="min_altitude" 
+                   placeholder="Min: {{ min_altitude_range }}" 
+                   min="{{ min_altitude_range }}" 
+                   max="{{ max_altitude_range }}"
+                   value="{{ request.GET.min_altitude }}">
+        </div>
+
+        <!-- Altitude Max -->
+        <div class="filter-group">
+            <label for="maxAltitude">Maximum Altitude (km)</label>
+            <input type="number" id="maxAltitude" name="max_altitude" 
+                   placeholder="Max: {{ max_altitude_range }}" 
+                   min="{{ min_altitude_range }}" 
+                   max="{{ max_altitude_range }}"
+                   value="{{ request.GET.max_altitude }}">
+        </div>
+    </div>
+
+    <div class="filter-buttons">
+        <button type="submit" class="apply-btn">🔍 Apply Filters</button>
+        <button type="reset" class="reset-btn" onclick="window.location.href='{% url 'analysis' %}'; return false;">↺ Reset Filters</button>
+    </div>
+</form>
+
+<!-- Summary Statistics -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <h2>Total Objects</h2>
+        <p>{{ total_objects }}</p>
+    </div>
+    <div class="summary-card">
+        <h2>Mean Altitude (km)</h2>
+        <p>{{ mean_altitude }}</p>
+    </div>
+</div>
+
+<!-- Charts Grid -->
+<div class="charts-grid">
+    <!-- Object Type Distribution (Doughnut) -->
+    <div class="card">
+        <h2>📊 Object Type Distribution</h2>
+        <div class="chart-container">
+            <canvas id="objectChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Top Countries (Bar) -->
+    <div class="card">
+        <h2>🌍 Top 10 Countries</h2>
+        <div class="chart-container">
+            <canvas id="countryChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <!-- Debris Growth Trend (Line) -->
+    <div class="card">
+        <h2>📈 Debris Growth Trend (Year-wise)</h2>
+        <div class="chart-container">
+            <canvas id="lineChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Altitude Distribution (Bar) -->
+    <div class="card">
+        <h2>📏 Altitude Distribution</h2>
+        <div class="chart-container">
+            <canvas id="altitudeChart"></canvas>
+        </div>
+    </div>
+</div>
+
+{% else %}
+
+<!-- Empty State -->
+<div class="empty-state">
+    <p>📁 No data loaded</p>
+    <p>Upload a CSV file above to begin analyzing space debris data</p>
+</div>
+
+{% endif %}
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Chart.js Datalabels Plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+<script>
+    // Register datalabels plugin
+    Chart.register(ChartDataLabels);
+
+    // Data variables
+    const objectLabels = {{ object_labels|safe }};
+    const objectValues = {{ object_values|safe }};
+    const countryLabels = {{ country_labels|safe }};
+    const countryValues = {{ country_values|safe }};
+    const lineLabels = {{ line_labels|safe }};
+    const lineData = {{ line_data|safe }};
+    const altitudeLabels = {{ altitude_labels|safe }};
+    const altitudeValues = {{ altitude_values|safe }};
+
+    const baseChartConfig = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: {
+                    color: '#e2e8f0',
+                    padding: 20,
+                    usePointStyle: true,
+                    pointStyle: 'circle',
+                    font: {
+                        size: 12,
+                        weight: '500'
+                    }
+                },
+                position: 'bottom'
+            }
+        }
+    };
+
+    // 1. DOUGHNUT CHART - Object Type Distribution
+    const objectCtx = document.getElementById('objectChart');
+    if (objectCtx && objectLabels.length > 0) {
+        new Chart(objectCtx, {
+            type: 'doughnut',
+            data: {
+                labels: objectLabels,
+                datasets: [{
+                    data: objectValues,
+                    backgroundColor: [
+                        'rgba(0, 229, 255, 0.8)',
+                        'rgba(236, 72, 153, 0.8)',
+                        'rgba(251, 191, 36, 0.8)',
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(139, 92, 246, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                    ],
+                    borderColor: [
+                        'rgba(0, 229, 255, 1)',
+                        'rgba(236, 72, 153, 1)',
+                        'rgba(251, 191, 36, 1)',
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(139, 92, 246, 1)',
+                        'rgba(59, 130, 246, 1)',
+                    ],
+                    borderWidth: 2,
+                    hoverBorderWidth: 3
+                }]
+            },
+            options: {
+                ...baseChartConfig,
+                cutout: '60%',
+                plugins: {
+                    ...baseChartConfig.plugins,
+                    datalabels: {
+                        color: '#ffffff',
+                        font: {
+                            weight: 'bold',
+                            size: 12
+                        },
+                        formatter: function(value, context) {
+                            let sum = context.dataset.data.reduce((a, b) => a + b, 0);
+                            let percentage = ((value * 100) / sum).toFixed(1);
+                            return percentage + '%';
+                        }
+                    }
+                }
+            }
+        });
+    } else if (objectCtx) {
+        // Show message for empty chart
+        objectCtx.parentElement.parentElement.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 2rem;">No data available</p>';
+    }
+
+    // 2. BAR CHART - Top 10 Countries
+    const countryCtx = document.getElementById('countryChart');
+    if (countryCtx && countryLabels.length > 0) {
+        new Chart(countryCtx, {
+            type: 'bar',
+            data: {
+                labels: countryLabels,
+                datasets: [{
+                    label: 'Number of Objects',
+                    data: countryValues,
+                    backgroundColor: 'rgba(0, 229, 255, 0.7)',
+                    borderColor: 'rgba(0, 229, 255, 1)',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    hoverBackgroundColor: 'rgba(0, 229, 255, 0.9)',
+                    hoverBorderWidth: 3
+                }]
+            },
+            options: {
+                ...baseChartConfig,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 229, 255, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 229, 255, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    ...baseChartConfig.plugins,
+                    datalabels: {
+                        color: '#ffffff',
+                        font: {
+                            weight: 'bold',
+                            size: 11
+                        },
+                        anchor: 'end',
+                        align: 'top'
+                    }
+                }
+            }
+        });
+    } else if (countryCtx) {
+        countryCtx.parentElement.parentElement.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 2rem;">No data available</p>';
+    }
+
+    // 3. LINE CHART - Debris Growth Trend
+    const lineCtx = document.getElementById('lineChart');
+    if (lineCtx && lineLabels.length > 0) {
+        const lineGradient = lineCtx.createLinearGradient(0, 0, 0, 350);
+        lineGradient.addColorStop(0, 'rgba(0, 229, 255, 0.3)');
+        lineGradient.addColorStop(1, 'rgba(0, 229, 255, 0.05)');
+
+        new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: lineLabels,
+                datasets: [{
+                    label: 'Debris Count',
+                    data: lineData,
+                    borderColor: 'rgba(0, 229, 255, 1)',
+                    backgroundColor: lineGradient,
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: 'rgba(0, 229, 255, 1)',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: 'rgba(0, 229, 255, 1)',
+                    pointHoverBorderColor: '#ffffff',
+                    pointHoverBorderWidth: 3
+                }]
+            },
+            options: {
+                ...baseChartConfig,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 229, 255, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 229, 255, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    ...baseChartConfig.plugins,
+                    datalabels: {
+                        color: '#ffffff',
+                        font: {
+                            weight: 'bold',
+                            size: 10
+                        },
+                        anchor: 'end',
+                        align: 'top',
+                        offset: 8,
+                        display: function(context) {
+                            return context.datasetIndex === 0;
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
+        });
+    } else if (lineCtx) {
+        lineCtx.parentElement.parentElement.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 2rem;">No data available</p>';
+    }
+
+    // 4. BAR CHART - Altitude Distribution
+    const altitudeCtx = document.getElementById('altitudeChart');
+    if (altitudeCtx && altitudeLabels.length > 0) {
+        new Chart(altitudeCtx, {
+            type: 'bar',
+            data: {
+                labels: altitudeLabels,
+                datasets: [{
+                    label: 'Number of Objects',
+                    data: altitudeValues,
+                    backgroundColor: 'rgba(139, 92, 246, 0.7)',
+                    borderColor: 'rgba(139, 92, 246, 1)',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    hoverBackgroundColor: 'rgba(139, 92, 246, 0.9)',
+                    hoverBorderWidth: 3
+                }]
+            },
+            options: {
+                ...baseChartConfig,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 229, 255, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 229, 255, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    ...baseChartConfig.plugins,
+                    datalabels: {
+                        color: '#ffffff',
+                        font: {
+                            weight: 'bold',
+                            size: 11
+                        },
+                        anchor: 'end',
+                        align: 'top'
+                    }
+                }
+            }
+        });
+    } else if (altitudeCtx) {
+        altitudeCtx.parentElement.parentElement.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 2rem;">No data available</p>';
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends 'managespace/base.html' %}
+
+{% block title %}Analysis - Space Debris Portal{% endblock %}
+
+{% block content %}
+<h1>Space Debris Analysis</h1>
+
+<div class="upload-form">
+    <h2>Upload Dataset</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="file" accept=".csv" required>
+        <button type="submit">Upload & Analyze</button>
+    </form>
+    {% if message %}
+    <p class="message">{{ message }}</p>
+    {% endif %}
+</div>
+
+<div class="summary-cards">
+    <div class="card summary-card">
+        <h2>Total Objects</h2>
+        <p>{{ total_objects }}</p>
+    </div>
+    <div class="card summary-card">
+        <h2>Mean Altitude (km)</h2>
+        <p>{{ mean_altitude|floatformat:2 }}</p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Country-wise Contribution</h2>
+    <div class="chart-container">
+        <canvas id="countryChart"></canvas>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Object Type Distribution</h2>
+    <div class="chart-container">
+        <canvas id="objectChart"></canvas>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Altitude Grouping</h2>
+    <ul>
+        {% for group, count in altitude_groups.items %}
+        <li>{{ group }}: {{ count }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<script>
+    // Country Bar Chart
+    const countryCtx = document.getElementById('countryChart').getContext('2d');
+    new Chart(countryCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ country_labels|safe }},
+            datasets: [{
+                label: 'Number of Objects',
+                data: {{ country_values|safe }},
+                backgroundColor: 'rgba(0, 255, 255, 0.6)',
+                borderColor: 'rgba(0, 255, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: '#ffffff' },
+                    grid: { color: '#333' }
+                },
+                x: {
+                    ticks: { color: '#ffffff' },
+                    grid: { color: '#333' }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: '#ffffff' } }
+            }
+        }
+    });
+
+    // Object Type Pie Chart
+    const objectCtx = document.getElementById('objectChart').getContext('2d');
+    new Chart(objectCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ object_labels|safe }},
+            datasets: [{
+                data: {{ object_values|safe }},
+                backgroundColor: [
+                    'rgba(0, 255, 255, 0.6)',
+                    'rgba(255, 0, 255, 0.6)',
+                    'rgba(255, 255, 0, 0.6)',
+                    'rgba(0, 255, 0, 0.6)',
+                    'rgba(255, 0, 0, 0.6)'
+                ],
+                borderColor: [
+                    'rgba(0, 255, 255, 1)',
+                    'rgba(255, 0, 255, 1)',
+                    'rgba(255, 255, 0, 1)',
+                    'rgba(0, 255, 0, 1)',
+                    'rgba(255, 0, 0, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { labels: { color: '#ffffff' } }
+            }
+        }
+    });
+</script>
+{% endblock %}

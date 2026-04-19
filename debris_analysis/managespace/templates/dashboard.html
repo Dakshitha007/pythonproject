@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Space Debris Portal{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    .header-section {
+        text-align: center;
+        padding: 3rem 2rem 2rem;
+    }
+
+    .header-section .title {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #00e5ff;
+        margin: 0;
+        letter-spacing: 2px;
+    }
+
+    .header-section .subtitle {
+        font-size: 1.2rem;
+        color: #94a3b8;
+        margin: 0.5rem 0 0;
+        font-weight: 400;
+    }
+
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        padding: 0 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .metric-card {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0, 229, 255, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #00e5ff, #3b82f6);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 229, 255, 0.2);
+        border-color: rgba(0, 229, 255, 0.6);
+    }
+
+    .metric-card:hover::before {
+        opacity: 1;
+    }
+
+    .metric-card .label {
+        font-size: 0.9rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+
+    .metric-card .value {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #00e5ff;
+        margin: 0;
+    }
+
+    .charts-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2rem;
+        padding: 0 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .chart-card {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 229, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .chart-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(0, 229, 255, 0.15);
+        border-color: rgba(0, 229, 255, 0.5);
+    }
+
+    .chart-card h3 {
+        color: #00e5ff;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0 0 1.5rem 0;
+        text-align: center;
+    }
+
+    .chart-container {
+        height: 350px;
+        position: relative;
+    }
+
+    .insights-section {
+        padding: 0 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .insights-card {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 229, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .insights-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(0, 229, 255, 0.15);
+        border-color: rgba(0, 229, 255, 0.5);
+    }
+
+    .insights-card .header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .insights-card .header h3 {
+        color: #00e5ff;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .insights-card .header::before {
+        content: "🧠";
+        font-size: 1.2rem;
+    }
+
+    .insights-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .insights-list li {
+        color: #e2e8f0;
+        margin-bottom: 0.8rem;
+        padding-left: 1rem;
+        position: relative;
+        line-height: 1.5;
+    }
+
+    .insights-list li::before {
+        content: "•";
+        color: #00e5ff;
+        font-weight: bold;
+        position: absolute;
+        left: 0;
+    }
+
+    @media (max-width: 768px) {
+        .navbar .menu {
+            display: none;
+        }
+        .header-section .title {
+            font-size: 2rem;
+        }
+        .metrics-grid {
+            grid-template-columns: 1fr;
+        }
+        .charts-section {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- Header Section -->
+<section class="header-section">
+    <h1 class="title">Executive Dashboard</h1>
+    <p class="subtitle">High-level overview of orbital debris monitoring</p>
+</section>
+
+<!-- Key Metrics Section -->
+<section class="metrics-grid">
+    <div class="metric-card">
+        <div class="label">Total Objects</div>
+        <div class="value">{{ total_objects }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="label">Total Payloads</div>
+        <div class="value">{{ total_payloads }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="label">Total Debris</div>
+        <div class="value">{{ total_debris }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="label">Primary Debris Type</div>
+        <div class="value">{{ primary_debris_type }}</div>
+    </div>
+</section>
+
+<!-- Charts Section -->
+<section class="charts-section">
+    <div class="chart-card">
+        <h3>Debris Type Distribution</h3>
+        <div class="chart-container">
+            <canvas id="typeChart"></canvas>
+        </div>
+    </div>
+    <div class="chart-card">
+        <h3>Debris Growth Trend</h3>
+        <div class="chart-container">
+            <canvas id="lineChart"></canvas>
+        </div>
+    </div>
+</section>
+
+<!-- Insights Section -->
+<section class="insights-section">
+    <div class="insights-card">
+        <div class="header">
+            <h3>Insights & Observations</h3>
+        </div>
+        <ul class="insights-list">
+            {% for insight in insights %}
+            <li>{{ insight }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Donut Chart
+    const ctx = document.getElementById('typeChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [{
+                data: {{ chart_data|safe }},
+                backgroundColor: [
+                    'rgba(0, 229, 255, 0.8)',
+                    'rgba(236, 72, 153, 0.8)',
+                    'rgba(251, 191, 36, 0.8)',
+                    'rgba(34, 197, 94, 0.8)',
+                    'rgba(139, 92, 246, 0.8)'
+                ],
+                borderWidth: 0,
+                hoverBorderWidth: 2,
+                hoverBorderColor: 'rgba(0, 229, 255, 1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        color: '#e2e8f0',
+                        padding: 20,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                }
+            },
+            animation: {
+                animateScale: true,
+                animateRotate: true
+            }
+        }
+    });
+
+    // Line Chart
+    const lineCtx = document.getElementById('lineChart').getContext('2d');
+    const gradient = lineCtx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(0, 229, 255, 0.3)');
+    gradient.addColorStop(1, 'rgba(0, 229, 255, 0.05)');
+
+    new Chart(lineCtx, {
+        type: 'line',
+        data: {
+            labels: {{ line_labels|safe }},
+            datasets: [{
+                label: 'Debris Count',
+                data: {{ line_data|safe }},
+                borderColor: 'rgba(0, 229, 255, 1)',
+                backgroundColor: gradient,
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(0, 229, 255, 1)',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: 'rgba(0, 229, 255, 1)',
+                pointHoverBorderColor: '#ffffff',
+                pointHoverBorderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        borderColor: 'rgba(0, 229, 255, 0.3)'
+                    },
+                    ticks: {
+                        color: '#94a3b8'
+                    }
+                },
+                y: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        borderColor: 'rgba(0, 229, 255, 0.3)'
+                    },
+                    ticks: {
+                        color: '#94a3b8'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            }
+        }
+    });
+</script>
+{% endblock %}

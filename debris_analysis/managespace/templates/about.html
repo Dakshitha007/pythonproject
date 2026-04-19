@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+
+{% block title %}About - Space Debris Portal{% endblock %}
+
+{% block content %}
+<style>
+    .about-section {
+        max-width: 1200px;
+        margin: 3rem auto;
+        padding: 0 2rem;
+    }
+
+    .about-hero {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .about-hero h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #00e5ff;
+        margin: 0 0 0.5rem;
+        letter-spacing: 1px;
+    }
+
+    .about-hero p {
+        font-size: 1.1rem;
+        color: #94a3b8;
+        margin: 0;
+    }
+
+    .about-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .about-card {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 229, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .about-card:hover {
+        box-shadow: 0 15px 40px rgba(0, 229, 255, 0.2);
+        border-color: rgba(0, 229, 255, 0.5);
+        transform: translateY(-3px);
+    }
+
+    .about-card h2 {
+        color: #00e5ff;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0 0 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .about-card h2::before {
+        font-size: 1.3rem;
+    }
+
+    .about-card:nth-child(1) h2::before {
+        content: "🎯";
+    }
+
+    .about-card:nth-child(2) h2::before {
+        content: "🔭";
+    }
+
+    .about-card:nth-child(3) h2::before {
+        content: "📊";
+    }
+
+    .about-card:nth-child(4) h2::before {
+        content: "💡";
+    }
+
+    .about-card p {
+        color: #e2e8f0;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 1rem 0 0;
+    }
+
+    .feature-list li {
+        color: #e2e8f0;
+        margin-bottom: 0.75rem;
+        padding-left: 1.5rem;
+        position: relative;
+        line-height: 1.5;
+    }
+
+    .feature-list li::before {
+        content: "✓";
+        color: #00e5ff;
+        font-weight: bold;
+        position: absolute;
+        left: 0;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .stat-box {
+        background: rgba(0, 229, 255, 0.05);
+        border: 1px solid rgba(0, 229, 255, 0.2);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .stat-box:hover {
+        background: rgba(0, 229, 255, 0.1);
+        border-color: rgba(0, 229, 255, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #00e5ff;
+        margin: 0;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0.5rem 0 0;
+    }
+
+    .footer-text {
+        text-align: center;
+        color: #64748b;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(0, 229, 255, 0.2);
+    }
+
+    @media (max-width: 768px) {
+        .about-hero h1 {
+            font-size: 1.75rem;
+        }
+
+        .about-section {
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .about-card {
+            padding: 1.5rem;
+        }
+
+        .about-cards-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+    }
+</style>
+
+<div class="about-section">
+    <!-- Hero Section -->
+    <div class="about-hero">
+        <h1>About Space Debris Portal 🚀</h1>
+        <p>Advanced orbital debris monitoring and analysis platform</p>
+    </div>
+
+    <!-- Cards Grid Container -->
+    <div class="about-cards-grid">
+        <!-- Purpose Card -->
+        <div class="about-card">
+            <h2>Our Mission</h2>
+            <p>The Space Debris Portal is designed to provide comprehensive monitoring, analysis, and visualization of orbital debris in Earth's orbit. We help space agencies, researchers, and organizations track and understand the growing challenge of space debris through real-time data analytics.</p>
+        </div>
+
+        <!-- Features Card -->
+        <div class="about-card">
+            <h2>Key Features</h2>
+            <ul class="feature-list">
+                <li>Real-time orbital debris tracking and monitoring</li>
+                <li>Advanced data visualization and analytics</li>
+                <li>Comprehensive dataset with 1000+ debris objects</li>
+                <li>Country-wise contribution analysis</li>
+                <li>Altitude grouping and trend analysis</li>
+                <li>Interactive dashboard with dynamic charts</li>
+                <li>Upload and analyze custom datasets</li>
+            </ul>
+        </div>
+
+        <!-- Data Insights Card -->
+        <div class="about-card">
+            <h2>Data & Analytics</h2>
+            <p>Our platform processes extensive datasets of orbital objects including payloads, debris fragments, and rocket bodies. We provide detailed insights into debris distribution patterns, growth trends, and spatial characteristics to support research and decision-making.</p>
+        </div>
+
+        <!-- Technology Card -->
+        <div class="about-card">
+            <h2>Technology Stack</h2>
+            <p>Built with modern web technologies for performance, reliability, and scalability. Our platform utilizes Django for backend services, MongoDB for data persistence, and Chart.js for interactive visualizations.</p>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-box">
+            <p class="stat-number">1000+</p>
+            <p class="stat-label">Debris Objects</p>
+        </div>
+        <div class="stat-box">
+            <p class="stat-number">Real-time</p>
+            <p class="stat-label">Updates</p>
+        </div>
+        <div class="stat-box">
+            <p class="stat-number">50+</p>
+            <p class="stat-label">Countries Tracked</p>
+        </div>
+        <div class="stat-box">
+            <p class="stat-number">∞</p>
+            <p class="stat-label">Possibilities</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-text">
+        <p><strong>Space Debris Portal v{{ app_version }}</strong></p>
+        <p>Advanced Orbital Debris Monitoring Platform</p>
+        <p style="font-size: 0.9rem;">© 2026 Space Debris Research Initiative. All rights reserved.</p>
+    </div>
+</div>
+{% endblock %}

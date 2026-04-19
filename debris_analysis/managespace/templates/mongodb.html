@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}MongoDB Demo - Space Debris Portal{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    .mongodb-header {
+        text-align: center;
+        padding: 2rem 0 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+    }
+
+    .mongodb-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #00e5ff;
+        margin: 0 0 0.5rem;
+        letter-spacing: 1px;
+    }
+
+    .mongodb-header p {
+        color: #94a3b8;
+        margin: 0;
+    }
+
+    .mongodb-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .card h2 {
+        color: #00e5ff;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0 0 1.5rem;
+    }
+
+    .object-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .object-list li {
+        background: rgba(0, 229, 255, 0.05);
+        border-left: 3px solid #00e5ff;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        border-radius: 8px;
+        color: #e2e8f0;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        word-break: break-all;
+        transition: all 0.3s ease;
+    }
+
+    .object-list li:hover {
+        background: rgba(0, 229, 255, 0.1);
+        border-color: #3b82f6;
+        transform: translateX(4px);
+    }
+
+    .status-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #00e5ff, #3b82f6);
+        color: #0d0d0d;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .mongodb-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .mongodb-header h1 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<!-- MongoDB Header -->
+<div class="mongodb-header">
+    <h1>MongoDB CRUD Demo 🗄️</h1>
+    <p>Demonstrating Create, Read, Update, and Delete operations</p>
+</div>
+
+<!-- MongoDB Operations Grid -->
+<div class="mongodb-grid">
+    <div class="card">
+        <h2>Inserted IDs <span class="status-badge">CREATE</span></h2>
+        <ul class="object-list">
+            {% if insert_ids %}
+                {% for id in insert_ids %}
+                <li>{{ id }}</li>
+                {% endfor %}
+            {% else %}
+            <li style="color: #94a3b8;">No data inserted</li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>Before Operations <span class="status-badge">READ</span></h2>
+        <ul class="object-list">
+            {% if objects_before %}
+                {% for obj in objects_before %}
+                <li>{{ obj }}</li>
+                {% endfor %}
+            {% else %}
+            <li style="color: #94a3b8;">No objects found</li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>After Operations <span class="status-badge">UPDATE/DELETE</span></h2>
+        <ul class="object-list">
+            {% if objects_after %}
+                {% for obj in objects_after %}
+                <li>{{ obj }}</li>
+                {% endfor %}
+            {% else %}
+            <li style="color: #94a3b8;">No objects remaining</li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
+<!-- Explanatory Note -->
+<div class="card">
+    <h2>💾 Operations Summary</h2>
+    <p style="color: #e2e8f0; line-height: 1.6;">
+        This demo showcases MongoDB CRUD operations:
+    </p>
+    <ul class="object-list" style="margin-top: 1rem;">
+        <li><strong>CREATE:</strong> Insert sample debris objects into the database</li>
+        <li><strong>READ:</strong> Retrieve all objects before any modifications</li>
+        <li><strong>UPDATE:</strong> Modify the altitude of an object (ID 900)</li>
+        <li><strong>DELETE:</strong> Remove an object from the collection (ID 902)</li>
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'managespace/base.html' %}
+
+{% block title %}Dashboard - Space Debris Portal{% endblock %}
+
+{% block content %}
+<h1>Space Debris Dashboard</h1>
+<div class="summary-cards">
+    <div class="card summary-card">
+        <h2>Total Objects</h2>
+        <p>{{ total_objects }}</p>
+    </div>
+    <div class="card summary-card">
+        <h2>Mean Altitude (km)</h2>
+        <p>{{ mean_altitude|floatformat:2 }}</p>
+    </div>
+</div>
+<div class="card">
+    <h2>Object Type Distribution</h2>
+    <ul>
+        {% for type, count in object_type_count.items %}
+        <li>{{ type }}: {{ count }}</li>
+        {% endfor %}
+    </ul>
+</div>
+<div class="card">
+    <h2>Country-wise Contribution</h2>
+    <ul>
+        {% for country, count in country_count.items %}
+        <li>{{ country }}: {{ count }}</li>
+        {% endfor %}
+    </ul>
+</div>
+<div class="card">
+    <h2>Altitude Grouping</h2>
+    <ul>
+        {% for group, count in altitude_groups.items %}
+        <li>{{ group }}: {{ count }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
