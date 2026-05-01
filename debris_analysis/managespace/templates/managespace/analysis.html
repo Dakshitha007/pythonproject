@@ -31,14 +31,22 @@
 <div class="card">
     <h2>Country-wise Contribution</h2>
     <div class="chart-container">
-        <canvas id="countryChart"></canvas>
+        {% if country_chart %}
+        <img src="{{ country_chart }}" alt="Country-wise Contribution" class="chart-image">
+        {% else %}
+        <div class="empty-chart">No data available</div>
+        {% endif %}
     </div>
 </div>
 
 <div class="card">
     <h2>Object Type Distribution</h2>
     <div class="chart-container">
-        <canvas id="objectChart"></canvas>
+        {% if object_chart %}
+        <img src="{{ object_chart }}" alt="Object Type Distribution" class="chart-image">
+        {% else %}
+        <div class="empty-chart">No data available</div>
+        {% endif %}
     </div>
 </div>
 
@@ -49,73 +57,4 @@
         <li>{{ group }}: {{ count }}</li>
         {% endfor %}
     </ul>
-</div>
-
-<script>
-    // Country Bar Chart
-    const countryCtx = document.getElementById('countryChart').getContext('2d');
-    new Chart(countryCtx, {
-        type: 'bar',
-        data: {
-            labels: {{ country_labels|safe }},
-            datasets: [{
-                label: 'Number of Objects',
-                data: {{ country_values|safe }},
-                backgroundColor: 'rgba(0, 255, 255, 0.6)',
-                borderColor: 'rgba(0, 255, 255, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { color: '#ffffff' },
-                    grid: { color: '#333' }
-                },
-                x: {
-                    ticks: { color: '#ffffff' },
-                    grid: { color: '#333' }
-                }
-            },
-            plugins: {
-                legend: { labels: { color: '#ffffff' } }
-            }
-        }
-    });
-
-    // Object Type Pie Chart
-    const objectCtx = document.getElementById('objectChart').getContext('2d');
-    new Chart(objectCtx, {
-        type: 'pie',
-        data: {
-            labels: {{ object_labels|safe }},
-            datasets: [{
-                data: {{ object_values|safe }},
-                backgroundColor: [
-                    'rgba(0, 255, 255, 0.6)',
-                    'rgba(255, 0, 255, 0.6)',
-                    'rgba(255, 255, 0, 0.6)',
-                    'rgba(0, 255, 0, 0.6)',
-                    'rgba(255, 0, 0, 0.6)'
-                ],
-                borderColor: [
-                    'rgba(0, 255, 255, 1)',
-                    'rgba(255, 0, 255, 1)',
-                    'rgba(255, 255, 0, 1)',
-                    'rgba(0, 255, 0, 1)',
-                    'rgba(255, 0, 0, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { labels: { color: '#ffffff' } }
-            }
-        }
-    });
-</script>
-{% endblock %}
+</div>{% endblock %}

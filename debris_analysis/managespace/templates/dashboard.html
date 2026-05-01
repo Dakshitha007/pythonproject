@@ -120,6 +120,36 @@
         position: relative;
     }
 
+    .chart-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+    }
+
+    .empty-chart {
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .message {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        border-radius: 12px;
+        font-weight: 600;
+    }
+
+    .message.error {
+        color: #ff6b6b;
+        background: rgba(255, 107, 107, 0.12);
+        border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+
     .insights-section {
         padding: 0 2rem;
         margin-bottom: 3rem;
@@ -223,18 +253,30 @@
     </div>
 </section>
 
+{% if dashboard_error %}
+<div class="message error">{{ dashboard_error }}</div>
+{% endif %}
+
 <!-- Charts Section -->
 <section class="charts-section">
     <div class="chart-card">
         <h3>Debris Type Distribution</h3>
         <div class="chart-container">
-            <canvas id="typeChart"></canvas>
+            {% if type_chart %}
+            <img src="{{ type_chart }}" alt="Debris Type Distribution" class="chart-image">
+            {% else %}
+            <div class="empty-chart">No data available</div>
+            {% endif %}
         </div>
     </div>
     <div class="chart-card">
         <h3>Debris Growth Trend</h3>
         <div class="chart-container">
-            <canvas id="lineChart"></canvas>
+            {% if line_chart %}
+            <img src="{{ line_chart }}" alt="Debris Growth Trend" class="chart-image">
+            {% else %}
+            <div class="empty-chart">No data available</div>
+            {% endif %}
         </div>
     </div>
 </section>
@@ -253,112 +295,4 @@
     </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    // Donut Chart
-    const ctx = document.getElementById('typeChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: {{ chart_labels|safe }},
-            datasets: [{
-                data: {{ chart_data|safe }},
-                backgroundColor: [
-                    'rgba(0, 229, 255, 0.8)',
-                    'rgba(236, 72, 153, 0.8)',
-                    'rgba(251, 191, 36, 0.8)',
-                    'rgba(34, 197, 94, 0.8)',
-                    'rgba(139, 92, 246, 0.8)'
-                ],
-                borderWidth: 0,
-                hoverBorderWidth: 2,
-                hoverBorderColor: 'rgba(0, 229, 255, 1)'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '60%',
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'bottom',
-                    labels: {
-                        color: '#e2e8f0',
-                        padding: 20,
-                        usePointStyle: true,
-                        pointStyle: 'circle'
-                    }
-                }
-            },
-            animation: {
-                animateScale: true,
-                animateRotate: true
-            }
-        }
-    });
-
-    // Line Chart
-    const lineCtx = document.getElementById('lineChart').getContext('2d');
-    const gradient = lineCtx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(0, 229, 255, 0.3)');
-    gradient.addColorStop(1, 'rgba(0, 229, 255, 0.05)');
-
-    new Chart(lineCtx, {
-        type: 'line',
-        data: {
-            labels: {{ line_labels|safe }},
-            datasets: [{
-                label: 'Debris Count',
-                data: {{ line_data|safe }},
-                borderColor: 'rgba(0, 229, 255, 1)',
-                backgroundColor: gradient,
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: 'rgba(0, 229, 255, 1)',
-                pointBorderColor: '#ffffff',
-                pointBorderWidth: 2,
-                pointRadius: 6,
-                pointHoverRadius: 8,
-                pointHoverBackgroundColor: 'rgba(0, 229, 255, 1)',
-                pointHoverBorderColor: '#ffffff',
-                pointHoverBorderWidth: 3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)',
-                        borderColor: 'rgba(0, 229, 255, 0.3)'
-                    },
-                    ticks: {
-                        color: '#94a3b8'
-                    }
-                },
-                y: {
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)',
-                        borderColor: 'rgba(0, 229, 255, 0.3)'
-                    },
-                    ticks: {
-                        color: '#94a3b8'
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            interaction: {
-                intersect: false,
-                mode: 'index'
-            }
-        }
-    });
-</script>
 {% endblock %}

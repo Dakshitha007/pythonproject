@@ -1,0 +1,87 @@
+Abstract:
+The `debris_analysis` project is a Django-based portal designed to analyze and visualize orbital debris data. It combines CSV file uploads, dataset validation, filtered analysis, and chart generation to help users understand debris distribution, object types, altitude trends, and launch-year history. The system is built to support academic research and practical learning in space debris management.
+
+Technologies Used:
+- Python 3: Main programming language used for backend logic, data manipulation, and integration with Django.
+- Django: Web framework used to handle routing, views, templates, session management, and file uploads.
+- Pandas: Used to load CSV datasets into dataframes, validate required columns, filter data, and compute statistics.
+- NumPy: Used to calculate numerical metrics such as average altitude.
+- Matplotlib: Used to render doughnut, line, and bar charts, then convert them to Base64 images for template display.
+- PyMongo: Included in a MongoDB demo view to show how the project can connect to and use a NoSQL database.
+- SQLite: Default database used by Django for project configuration and any app models.
+
+Detailed Implementation Explanation:
+
+1. Data Loading and Default Dataset
+- The app uses `get_data(request)` to load the active dataset.
+- If the user has uploaded a file, its path is stored in `request.session['data_file']`.
+- If no upload exists, the app loads a default file named `debris.csv`.
+- This design ensures the dashboard always has a dataset to display.
+
+2. Dashboard Logic
+- The `dashboard(request)` view loads data and checks for required fields: `object_type`, `country`, `altitude_km`, and `launch_year_estimate`.
+- It computes core analytics:
+  - total object count
+  - object type counts
+  - country distribution
+  - altitude groups using Pandas `cut`
+  - average altitude with NumPy
+  - payload vs debris and rocket/unknown counts
+- The app also computes a time series of debris by launch year and generates dynamic insights based on data size, dominant object type, and altitude.
+- Chart images are created only when required columns are present.
+
+3. Chart Rendering
+- Helper functions `create_doughnut_chart`, `create_line_chart`, and `create_bar_chart` are defined in `views.py`.
+- Each function uses Matplotlib to build the figure with custom styling.
+- The chart is saved into an in-memory buffer and encoded to Base64 using `fig_to_base64()`.
+- This allows charts to be embedded in HTML templates as image sources without saving files.
+
+4. Analysis and File Upload
+- The `analysis(request)` view supports CSV uploads via POST.
+- On upload, the file is saved under `media/uploads/` using Django `FileSystemStorage`.
+- The app reads the uploaded CSV with Pandas and checks required columns.
+- If the dataset is valid, its path is stored in session and a success message is displayed.
+- If validation fails, the file is removed and an error message is returned.
+
+5. Data Filtering
+- `get_filter_data(request, df)` applies filters from query parameters:
+  - country
+  - object_type
+  - start_year and end_year
+  - status
+- It applies filters safely with Pandas boolean masks and catches invalid values.
+- This enables users to narrow results with interactive controls.
+
+6. Chart Data from Filters
+- `get_chart_data(filtered_df)` returns dataset values for charts and summary metrics.
+- It builds object type labels, top country values, year trends, altitude distributions, and mean altitude.
+- If launch year or altitude columns are missing, it uses fallback logic to keep charts functional.
+
+7. MongoDB Demo
+- A separate view `mongodb_demo(request)` connects to a local MongoDB instance at `mongodb://localhost:27017/`.
+- It inserts sample space debris records, reads them, updates one record, and deletes another.
+- This functionality is a demonstration of how the app can be extended to use NoSQL storage.
+
+8. About Page
+- The `about(request)` view renders static application metadata such as app name and version.
+
+How It Works Step by Step:
+1. The user opens the portal.
+2. The dashboard loads a default dataset or a user-uploaded CSV.
+3. The app reads the dataset into a Pandas dataframe.
+4. Required columns are verified before analysis.
+5. The view calculates statistics and prepares chart values.
+6. The chart helpers render images and convert them to Base64.
+7. The HTML templates display summaries, charts, and data insights.
+8. Users can upload new datasets and apply filters to update the analysis.
+
+Code Implementation Highlights:
+- Separation of concerns: data access, filtering, chart generation, and page rendering are split into functions.
+- Session storage: user uploads are kept active using `request.session['data_file']`, so the portal retains state across views.
+- Validation-first design: uploaded CSV files are checked for required columns before the app accepts them.
+- Server-side chart generation: Matplotlib is used to avoid client-side chart dependencies and keep rendering centralized.
+
+Final Notes:
+- The project is built to be simple, maintainable, and easy to extend.
+- It is suitable for academic use, demonstrations, and basic space debris analytics.
+- The implementation is practical for a college project and provides a strong foundation for future enhancements.

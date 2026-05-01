@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Space Debris Portal{% endblock %}</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>{% block title %}Space Debris Density Analysis Portal{% endblock %}</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -223,7 +222,7 @@
 <body>
     <!-- Navigation Bar -->
     <nav class="navbar">
-        <a href="{% url 'dashboard' %}" class="navbar-brand">Space Debris Portal</a>
+        <a href="{% url 'dashboard' %}" class="navbar-brand">SPACE DEBRIS DENSITY ANALYSIS PORTAL</a>
         <ul class="nav-menu">
             <li class="nav-item">
                 <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>

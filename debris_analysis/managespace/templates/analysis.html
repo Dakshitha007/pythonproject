@@ -363,6 +363,23 @@
         margin: 1.5rem 0;
     }
 
+    .chart-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+    }
+
+    .empty-chart {
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding: 1rem;
+        text-align: center;
+    }
+
     /* ===== EMPTY STATE ===== */
     .empty-state {
         background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
@@ -437,6 +454,7 @@
             <p>• <strong>object_type</strong> - Type of orbital object (PAYLOAD, DEBRIS, ROCKET BODY, etc.)</p>
             <p>• <strong>country</strong> - Country of origin</p>
             <p>• <strong>altitude_km</strong> - Orbital altitude in kilometers</p>
+            <p>• <strong>launch_year_estimate</strong> - Year of launch for growth trend</p>
         </div>
     </div>
 
@@ -455,109 +473,152 @@
 </div>
 
 {% if has_data %}
+    {% if not has_valid_data %}
+    <div class="empty-state">
+        <p>Required column is missing</p>
+    </div>
+    {% else %}
 
-<!-- Filter Panel -->
-<form method="get" class="filter-panel" id="filterForm">
-    <h2>Filter Data</h2>
-    <div class="filter-grid">
-        <!-- Country Filter -->
-        <div class="filter-group">
-            <label for="countrySelect">Country</label>
-            <select id="countrySelect" name="country">
-                <option value="">All Countries</option>
-                {% for country in countries %}
-                <option value="{{ country }}" {% if request.GET.country == country %}selected{% endif %}>{{ country }}</option>
-                {% endfor %}
-            </select>
+    <!-- Filter Panel -->
+    <form method="get" class="filter-panel" id="filterForm">
+        <h2>Filter Data</h2>
+        <div class="filter-grid">
+            <!-- Country Filter -->
+            <div class="filter-group">
+                <label for="countrySelect">Country</label>
+                <select id="countrySelect" name="country">
+                    <option value="">All Countries</option>
+                    {% for country in countries %}
+                    <option value="{{ country }}" {% if request.GET.country == country %}selected{% endif %}>{{ country }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Object Type Filter -->
+            <div class="filter-group">
+                <label for="objectTypeSelect">Object Type</label>
+                <select id="objectTypeSelect" name="object_type">
+                    <option value="">All Types</option>
+                    {% for obj_type in object_types %}
+                    <option value="{{ obj_type }}" {% if request.GET.object_type == obj_type %}selected{% endif %}>{{ obj_type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Altitude Min -->
+            <div class="filter-group">
+                <label for="startYear">Start Year</label>
+                <input type="number" id="startYear" name="start_year" 
+                       placeholder="From: {{ min_year_range }}" 
+                       min="{{ min_year_range }}" 
+                       max="{{ max_year_range }}"
+                       value="{{ request.GET.start_year }}">
+            </div>
+
+            <!-- Altitude Max -->
+            <div class="filter-group">
+                <label for="endYear">End Year</label>
+                <input type="number" id="endYear" name="end_year" 
+                       placeholder="To: {{ max_year_range }}" 
+                       min="{{ min_year_range }}" 
+                       max="{{ max_year_range }}"
+                       value="{{ request.GET.end_year }}">
+            </div>
+
+            <!-- Status Filter -->
+            {% if statuses %}
+            <div class="filter-group">
+                <label for="statusSelect">Status</label>
+                <select id="statusSelect" name="status">
+                    <option value="">All Status</option>
+                    {% for status in statuses %}
+                    <option value="{{ status }}" {% if request.GET.status == status %}selected{% endif %}>{{ status }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
         </div>
 
-        <!-- Object Type Filter -->
-        <div class="filter-group">
-            <label for="objectTypeSelect">Object Type</label>
-            <select id="objectTypeSelect" name="object_type">
-                <option value="">All Types</option>
-                {% for obj_type in object_types %}
-                <option value="{{ obj_type }}" {% if request.GET.object_type == obj_type %}selected{% endif %}>{{ obj_type }}</option>
-                {% endfor %}
-            </select>
+        <div class="filter-buttons">
+            <button type="submit" class="apply-btn">🔍 Apply Filters</button>
+            <button type="reset" class="reset-btn" onclick="window.location.href='{% url 'analysis' %}'; return false;">↺ Reset Filters</button>
         </div>
+    </form>
 
-        <!-- Altitude Min -->
-        <div class="filter-group">
-            <label for="minAltitude">Minimum Altitude (km)</label>
-            <input type="number" id="minAltitude" name="min_altitude" 
-                   placeholder="Min: {{ min_altitude_range }}" 
-                   min="{{ min_altitude_range }}" 
-                   max="{{ max_altitude_range }}"
-                   value="{{ request.GET.min_altitude }}">
+    <!-- Filter Result Message -->
+    {% if has_filters and not has_filtered_results %}
+    <div class="empty-state">
+        <p>🔍 {{ filter_message }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Summary Statistics -->
+    {% if has_filtered_results %}
+    <div class="summary-cards">
+        <div class="summary-card">
+            <h2>Total Objects</h2>
+            <p>{{ total_objects }}</p>
         </div>
-
-        <!-- Altitude Max -->
-        <div class="filter-group">
-            <label for="maxAltitude">Maximum Altitude (km)</label>
-            <input type="number" id="maxAltitude" name="max_altitude" 
-                   placeholder="Max: {{ max_altitude_range }}" 
-                   min="{{ min_altitude_range }}" 
-                   max="{{ max_altitude_range }}"
-                   value="{{ request.GET.max_altitude }}">
-        </div>
-    </div>
-
-    <div class="filter-buttons">
-        <button type="submit" class="apply-btn">🔍 Apply Filters</button>
-        <button type="reset" class="reset-btn" onclick="window.location.href='{% url 'analysis' %}'; return false;">↺ Reset Filters</button>
-    </div>
-</form>
-
-<!-- Summary Statistics -->
-<div class="summary-cards">
-    <div class="summary-card">
-        <h2>Total Objects</h2>
-        <p>{{ total_objects }}</p>
-    </div>
-    <div class="summary-card">
-        <h2>Mean Altitude (km)</h2>
-        <p>{{ mean_altitude }}</p>
-    </div>
-</div>
-
-<!-- Charts Grid -->
-<div class="charts-grid">
-    <!-- Object Type Distribution (Doughnut) -->
-    <div class="card">
-        <h2>📊 Object Type Distribution</h2>
-        <div class="chart-container">
-            <canvas id="objectChart"></canvas>
-        </div>
-    </div>
-
-    <!-- Top Countries (Bar) -->
-    <div class="card">
-        <h2>🌍 Top 10 Countries</h2>
-        <div class="chart-container">
-            <canvas id="countryChart"></canvas>
-        </div>
-    </div>
-</div>
-
-<div class="charts-grid">
-    <!-- Debris Growth Trend (Line) -->
-    <div class="card">
-        <h2>📈 Debris Growth Trend (Year-wise)</h2>
-        <div class="chart-container">
-            <canvas id="lineChart"></canvas>
+        <div class="summary-card">
+            <h2>Mean Altitude (km)</h2>
+            <p>{{ mean_altitude }}</p>
         </div>
     </div>
 
-    <!-- Altitude Distribution (Bar) -->
-    <div class="card">
-        <h2>📏 Altitude Distribution</h2>
-        <div class="chart-container">
-            <canvas id="altitudeChart"></canvas>
+    <!-- Charts Grid -->
+    <div class="charts-grid">
+        <!-- Object Type Distribution (Doughnut) -->
+        <div class="card">
+            <h2>📊 Object Type Distribution</h2>
+            <div class="chart-container">
+                {% if object_chart %}
+                <img src="{{ object_chart }}" alt="Object Type Distribution" class="chart-image">
+                {% else %}
+                <div class="empty-chart">No data available</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Top Countries (Bar) -->
+        <div class="card">
+            <h2>🌍 Top 10 Countries</h2>
+            <div class="chart-container">
+                {% if country_chart %}
+                <img src="{{ country_chart }}" alt="Top 10 Countries" class="chart-image">
+                {% else %}
+                <div class="empty-chart">No data available</div>
+                {% endif %}
+            </div>
         </div>
     </div>
-</div>
 
+    <div class="charts-grid">
+        <!-- Debris Growth Trend (Line) -->
+        <div class="card">
+            <h2>📈 Debris Growth Trend (Year-wise)</h2>
+            <div class="chart-container">
+                {% if line_chart %}
+                <img src="{{ line_chart }}" alt="Debris Growth Trend" class="chart-image">
+                {% else %}
+                <div class="empty-chart">No data available</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Altitude Distribution (Bar) -->
+        <div class="card">
+            <h2>📏 Altitude Distribution</h2>
+            <div class="chart-container">
+                {% if altitude_chart %}
+                <img src="{{ altitude_chart }}" alt="Altitude Distribution" class="chart-image">
+                {% else %}
+                <div class="empty-chart">No data available</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
 {% else %}
 
 <!-- Empty State -->
@@ -567,313 +628,5 @@
 </div>
 
 {% endif %}
-
-<!-- Chart.js Library -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<!-- Chart.js Datalabels Plugin -->
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
-
-<script>
-    // Register datalabels plugin
-    Chart.register(ChartDataLabels);
-
-    // Data variables
-    const objectLabels = {{ object_labels|safe }};
-    const objectValues = {{ object_values|safe }};
-    const countryLabels = {{ country_labels|safe }};
-    const countryValues = {{ country_values|safe }};
-    const lineLabels = {{ line_labels|safe }};
-    const lineData = {{ line_data|safe }};
-    const altitudeLabels = {{ altitude_labels|safe }};
-    const altitudeValues = {{ altitude_values|safe }};
-
-    const baseChartConfig = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                labels: {
-                    color: '#e2e8f0',
-                    padding: 20,
-                    usePointStyle: true,
-                    pointStyle: 'circle',
-                    font: {
-                        size: 12,
-                        weight: '500'
-                    }
-                },
-                position: 'bottom'
-            }
-        }
-    };
-
-    // 1. DOUGHNUT CHART - Object Type Distribution
-    const objectCtx = document.getElementById('objectChart');
-    if (objectCtx && objectLabels.length > 0) {
-        new Chart(objectCtx, {
-            type: 'doughnut',
-            data: {
-                labels: objectLabels,
-                datasets: [{
-                    data: objectValues,
-                    backgroundColor: [
-                        'rgba(0, 229, 255, 0.8)',
-                        'rgba(236, 72, 153, 0.8)',
-                        'rgba(251, 191, 36, 0.8)',
-                        'rgba(34, 197, 94, 0.8)',
-                        'rgba(139, 92, 246, 0.8)',
-                        'rgba(59, 130, 246, 0.8)',
-                    ],
-                    borderColor: [
-                        'rgba(0, 229, 255, 1)',
-                        'rgba(236, 72, 153, 1)',
-                        'rgba(251, 191, 36, 1)',
-                        'rgba(34, 197, 94, 1)',
-                        'rgba(139, 92, 246, 1)',
-                        'rgba(59, 130, 246, 1)',
-                    ],
-                    borderWidth: 2,
-                    hoverBorderWidth: 3
-                }]
-            },
-            options: {
-                ...baseChartConfig,
-                cutout: '60%',
-                plugins: {
-                    ...baseChartConfig.plugins,
-                    datalabels: {
-                        color: '#ffffff',
-                        font: {
-                            weight: 'bold',
-                            size: 12
-                        },
-                        formatter: function(value, context) {
-                            let sum = context.dataset.data.reduce((a, b) => a + b, 0);
-                            let percentage = ((value * 100) / sum).toFixed(1);
-                            return percentage + '%';
-                        }
-                    }
-                }
-            }
-        });
-    } else if (objectCtx) {
-        // Show message for empty chart
-        objectCtx.parentElement.parentElement.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 2rem;">No data available</p>';
-    }
-
-    // 2. BAR CHART - Top 10 Countries
-    const countryCtx = document.getElementById('countryChart');
-    if (countryCtx && countryLabels.length > 0) {
-        new Chart(countryCtx, {
-            type: 'bar',
-            data: {
-                labels: countryLabels,
-                datasets: [{
-                    label: 'Number of Objects',
-                    data: countryValues,
-                    backgroundColor: 'rgba(0, 229, 255, 0.7)',
-                    borderColor: 'rgba(0, 229, 255, 1)',
-                    borderWidth: 2,
-                    borderRadius: 8,
-                    hoverBackgroundColor: 'rgba(0, 229, 255, 0.9)',
-                    hoverBorderWidth: 3
-                }]
-            },
-            options: {
-                ...baseChartConfig,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0, 229, 255, 0.1)',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#94a3b8',
-                            font: {
-                                size: 11
-                            }
-                        }
-                    },
-                    x: {
-                        grid: {
-                            color: 'rgba(0, 229, 255, 0.1)',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#94a3b8',
-                            font: {
-                                size: 11
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    ...baseChartConfig.plugins,
-                    datalabels: {
-                        color: '#ffffff',
-                        font: {
-                            weight: 'bold',
-                            size: 11
-                        },
-                        anchor: 'end',
-                        align: 'top'
-                    }
-                }
-            }
-        });
-    } else if (countryCtx) {
-        countryCtx.parentElement.parentElement.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 2rem;">No data available</p>';
-    }
-
-    // 3. LINE CHART - Debris Growth Trend
-    const lineCtx = document.getElementById('lineChart');
-    if (lineCtx && lineLabels.length > 0) {
-        const lineGradient = lineCtx.createLinearGradient(0, 0, 0, 350);
-        lineGradient.addColorStop(0, 'rgba(0, 229, 255, 0.3)');
-        lineGradient.addColorStop(1, 'rgba(0, 229, 255, 0.05)');
-
-        new Chart(lineCtx, {
-            type: 'line',
-            data: {
-                labels: lineLabels,
-                datasets: [{
-                    label: 'Debris Count',
-                    data: lineData,
-                    borderColor: 'rgba(0, 229, 255, 1)',
-                    backgroundColor: lineGradient,
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: 'rgba(0, 229, 255, 1)',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 2,
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
-                    pointHoverBackgroundColor: 'rgba(0, 229, 255, 1)',
-                    pointHoverBorderColor: '#ffffff',
-                    pointHoverBorderWidth: 3
-                }]
-            },
-            options: {
-                ...baseChartConfig,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0, 229, 255, 0.1)',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#94a3b8',
-                            font: {
-                                size: 11
-                            }
-                        }
-                    },
-                    x: {
-                        grid: {
-                            color: 'rgba(0, 229, 255, 0.1)',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#94a3b8',
-                            font: {
-                                size: 11
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    ...baseChartConfig.plugins,
-                    datalabels: {
-                        color: '#ffffff',
-                        font: {
-                            weight: 'bold',
-                            size: 10
-                        },
-                        anchor: 'end',
-                        align: 'top',
-                        offset: 8,
-                        display: function(context) {
-                            return context.datasetIndex === 0;
-                        }
-                    }
-                },
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                }
-            }
-        });
-    } else if (lineCtx) {
-        lineCtx.parentElement.parentElement.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 2rem;">No data available</p>';
-    }
-
-    // 4. BAR CHART - Altitude Distribution
-    const altitudeCtx = document.getElementById('altitudeChart');
-    if (altitudeCtx && altitudeLabels.length > 0) {
-        new Chart(altitudeCtx, {
-            type: 'bar',
-            data: {
-                labels: altitudeLabels,
-                datasets: [{
-                    label: 'Number of Objects',
-                    data: altitudeValues,
-                    backgroundColor: 'rgba(139, 92, 246, 0.7)',
-                    borderColor: 'rgba(139, 92, 246, 1)',
-                    borderWidth: 2,
-                    borderRadius: 8,
-                    hoverBackgroundColor: 'rgba(139, 92, 246, 0.9)',
-                    hoverBorderWidth: 3
-                }]
-            },
-            options: {
-                ...baseChartConfig,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0, 229, 255, 0.1)',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#94a3b8',
-                            font: {
-                                size: 11
-                            }
-                        }
-                    },
-                    x: {
-                        grid: {
-                            color: 'rgba(0, 229, 255, 0.1)',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#94a3b8',
-                            font: {
-                                size: 11
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    ...baseChartConfig.plugins,
-                    datalabels: {
-                        color: '#ffffff',
-                        font: {
-                            weight: 'bold',
-                            size: 11
-                        },
-                        anchor: 'end',
-                        align: 'top'
-                    }
-                }
-            }
-        });
-    } else if (altitudeCtx) {
-        altitudeCtx.parentElement.parentElement.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 2rem;">No data available</p>';
-    }
-</script>
 
 {% endblock %}

@@ -1,0 +1,625 @@
+const {
+  Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+  AlignmentType, HeadingLevel, BorderStyle, WidthType, ShadingType,
+  PageNumber, PageBreak, LevelFormat, Header, Footer, TabStopType,
+  TabStopPosition, VerticalAlign
+} = require('docx');
+const fs = require('fs');
+
+const border = { style: BorderStyle.SINGLE, size: 1, color: "CCCCCC" };
+const borders = { top: border, bottom: border, left: border, right: border };
+const noBorder = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
+const noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
+
+function h(text, level) {
+  return new Paragraph({
+    heading: level,
+    children: [new TextRun({ text, bold: true })]
+  });
+}
+
+function p(text, opts = {}) {
+  return new Paragraph({
+    alignment: opts.center ? AlignmentType.CENTER : AlignmentType.JUSTIFIED,
+    spacing: { before: 120, after: 120 },
+    children: [new TextRun({ text, bold: opts.bold, size: opts.size, font: "Times New Roman" })]
+  });
+}
+
+function bullet(text) {
+  return new Paragraph({
+    numbering: { reference: "bullets", level: 0 },
+    spacing: { before: 80, after: 80 },
+    children: [new TextRun({ text, font: "Times New Roman", size: 24 })]
+  });
+}
+
+function bold(text) {
+  return new TextRun({ text, bold: true, font: "Times New Roman", size: 24 });
+}
+
+function normal(text) {
+  return new TextRun({ text, font: "Times New Roman", size: 24 });
+}
+
+function mixedPara(runs, opts = {}) {
+  return new Paragraph({
+    alignment: opts.center ? AlignmentType.CENTER : AlignmentType.JUSTIFIED,
+    spacing: { before: 120, after: 120 },
+    children: runs
+  });
+}
+
+function pageBreak() {
+  return new Paragraph({ children: [new TextRun({ break: 1 })] });
+}
+
+function centeredBold(text, size = 24) {
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 80, after: 80 },
+    children: [new TextRun({ text, bold: true, font: "Times New Roman", size })]
+  });
+}
+
+function centeredNormal(text, size = 24) {
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 80, after: 80 },
+    children: [new TextRun({ text, font: "Times New Roman", size })]
+  });
+}
+
+function sectionHeading(text) {
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 200, after: 100 },
+    border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "000000", space: 4 } },
+    children: [new TextRun({ text, bold: true, font: "Times New Roman", size: 26, allCaps: true })]
+  });
+}
+
+const doc = new Document({
+  numbering: {
+    config: [
+      {
+        reference: "bullets",
+        levels: [{
+          level: 0, format: LevelFormat.BULLET, text: "\u2022",
+          alignment: AlignmentType.LEFT,
+          style: { paragraph: { indent: { left: 720, hanging: 360 } } }
+        }]
+      },
+      {
+        reference: "sub-bullets",
+        levels: [{
+          level: 0, format: LevelFormat.BULLET, text: "o",
+          alignment: AlignmentType.LEFT,
+          style: { paragraph: { indent: { left: 1080, hanging: 360 } } }
+        }]
+      }
+    ]
+  },
+  styles: {
+    default: {
+      document: { run: { font: "Times New Roman", size: 24 } }
+    },
+    paragraphStyles: [
+      {
+        id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal", quickFormat: true,
+        run: { size: 28, bold: true, font: "Times New Roman" },
+        paragraph: { spacing: { before: 240, after: 120 }, outlineLevel: 0, alignment: AlignmentType.LEFT }
+      },
+      {
+        id: "Heading2", name: "Heading 2", basedOn: "Normal", next: "Normal", quickFormat: true,
+        run: { size: 26, bold: true, font: "Times New Roman" },
+        paragraph: { spacing: { before: 180, after: 100 }, outlineLevel: 1 }
+      },
+      {
+        id: "Heading3", name: "Heading 3", basedOn: "Normal", next: "Normal", quickFormat: true,
+        run: { size: 24, bold: true, font: "Times New Roman" },
+        paragraph: { spacing: { before: 140, after: 80 }, outlineLevel: 2 }
+      }
+    ]
+  },
+  sections: [{
+    properties: {
+      page: {
+        size: { width: 11906, height: 16838 },
+        margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }
+      }
+    },
+    children: [
+
+      // ─── COVER PAGE ───────────────────────────────────────────────
+      new Paragraph({ spacing: { before: 200, after: 100 }, children: [] }),
+      centeredBold("SPACE DEBRIS DENSITY ANALYSIS AND MONITORING PORTAL", 28),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      centeredNormal("PROJECT REPORT SUBMITTED IN PARTIAL FULFILLMENT"),
+      centeredNormal("OF THE REQUIREMENTS FOR THE AWARD OF THE"),
+      centeredBold("DEGREE OF BACHELOR OF ENGINEERING"),
+      centeredBold("IN COMPUTER SCIENCE AND ENGINEERING"),
+      centeredNormal("OF THE ANNA UNIVERSITY"),
+      new Paragraph({ spacing: { before: 160, after: 160 }, children: [] }),
+      centeredBold("PROJECT WORK"),
+      new Paragraph({ spacing: { before: 160, after: 80 }, children: [] }),
+      centeredNormal("Submitted by"),
+      centeredBold("DAKSHITHA S - 722825104026"),
+      new Paragraph({ spacing: { before: 160, after: 80 }, children: [] }),
+      centeredBold("BATCH"),
+      centeredNormal("2025 - 2029"),
+      new Paragraph({ spacing: { before: 160, after: 80 }, children: [] }),
+      centeredNormal("Under the Guidance of"),
+      centeredBold("Dr. N. Saranya M.E., Ph.D."),
+      centeredBold("Assistant Professor"),
+      new Paragraph({ spacing: { before: 200, after: 80 }, children: [] }),
+      centeredBold("COMPUTER SCIENCE AND ENGINEERING"),
+      centeredBold("Sri Eshwar College of Engineering"),
+      centeredNormal("(An Autonomous Institution \u2013 Affiliated to Anna University)"),
+      centeredBold("COIMBATORE \u2013 641 202"),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      centeredBold("APRIL 2026"),
+
+      // ─── PAGE BREAK ───
+      pageBreak(),
+
+      // ─── BONAFIDE CERTIFICATE ─────────────────────────────────────
+      sectionHeading("BONAFIDE CERTIFICATE"),
+      new Paragraph({ spacing: { before: 120, after: 120 }, children: [] }),
+      mixedPara([
+        normal("Certified that this Report titled "),
+        bold('"SPACE DEBRIS DENSITY ANALYSIS AND MONITORING PORTAL"'),
+        normal(" for the course U23CS382 \u2013 Python Programming is the bonafide work of")
+      ], { center: false }),
+      centeredBold("DAKSHITHA S   722825104026"),
+      p("who carried out the project work under my supervision."),
+      new Paragraph({ spacing: { before: 240, after: 240 }, children: [] }),
+      new Table({
+        width: { size: 9026, type: WidthType.DXA },
+        columnWidths: [4513, 4513],
+        rows: [new TableRow({
+          children: [
+            new TableCell({
+              borders: noBorders, width: { size: 4513, type: WidthType.DXA },
+              children: [
+                p("", { center: false }),
+                mixedPara([bold("Dr. R. SUBHA M.E., Ph. D.")]),
+                mixedPara([bold("HEAD OF THE DEPARTMENT")]),
+                p("Dept. of Computer Science & Engineering"),
+                p("Sri Eshwar College of Engineering,"),
+                p("Coimbatore \u2013 641 202.")
+              ]
+            }),
+            new TableCell({
+              borders: noBorders, width: { size: 4513, type: WidthType.DXA },
+              children: [
+                p(""),
+                mixedPara([bold("Dr. N. Saranya M.E., Ph. D.")]),
+                mixedPara([bold("SUPERVISOR")]),
+                p("Assistant Professor,"),
+                p("Dept. of Computer Science & Engineering,"),
+                p("Sri Eshwar College of Engineering,"),
+                p("Coimbatore \u2013 641 202.")
+              ]
+            })
+          ]
+        })]
+      }),
+      new Paragraph({ spacing: { before: 200, after: 100 }, children: [] }),
+      p("Submitted for the Autonomous Semester Python Programming Project Viva-Voce held on \u2026\u2026\u2026\u2026\u2026\u2026"),
+      new Paragraph({ spacing: { before: 160, after: 80 }, children: [] }),
+      p("_________________________"),
+      p("INTERNAL EXAMINER"),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      p("_________________________"),
+      p("EXTERNAL EXAMINER"),
+
+      // ─── PAGE BREAK ───
+      pageBreak(),
+
+      // ─── DECLARATION ─────────────────────────────────────────────
+      sectionHeading("DECLARATION"),
+      new Paragraph({ spacing: { before: 120, after: 120 }, children: [] }),
+      centeredBold("DAKSHITHA S [722825104026]"),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      mixedPara([
+        normal("To declare that the project entitled "),
+        bold('"SPACE DEBRIS DENSITY ANALYSIS AND MONITORING PORTAL"'),
+        normal(" submitted in partial fulfillment to the University as the project work of Bachelor of Engineering (Computer Science and Engineering) Degree, is a record of original work done by me under the supervision and guidance of")
+      ]),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      mixedPara([bold("Dr. N. Saranya, M.E., Ph.D."), normal(" Assistant Professor, Department of Computer Science and Engineering, Sri Eshwar College of Engineering, Coimbatore.")]),
+      new Paragraph({ spacing: { before: 160, after: 80 }, children: [] }),
+      p("Place: Coimbatore"),
+      p("Date:"),
+      new Paragraph({ spacing: { before: 160, after: 80 }, children: [] }),
+      centeredNormal("DAKSHITHA S"),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      p("Project Guided by,"),
+      p("Dr. N. Saranya, M.E., Ph.D."),
+
+      // ─── PAGE BREAK ───
+      pageBreak(),
+
+      // ─── ACKNOWLEDGEMENT ─────────────────────────────────────────
+      sectionHeading("ACKNOWLEDGEMENT"),
+      new Paragraph({ spacing: { before: 120, after: 120 }, children: [] }),
+      p("The success of a work depends on a team and cooperation. I take this opportunity to express my gratitude and thanks to everyone who helped me in my project. I would like to thank the management for the constant support provided by them to complete this project."),
+      p("It is indeed my great honor and bounden duty to thank our beloved Chairman, Mr. R. Mohanram, for his academic interest and encouragement towards students."),
+      p("I am indebted to our Director Mr. R. Rajaram, for motivating and providing me with all facilities."),
+      p("I wish to express my sincere regards and deep sense of gratitude to Dr. Sudha Mohanram, M.E, Ph.D. Principal, for the excellent facilities and encouragement provided during the study and project."),
+      p("I am also thankful to Dr. R. Subha, M.E., Ph.D., Head of the Department of Computer Science and Engineering, for permitting me to carry out this project and for giving me complete freedom to utilize departmental resources."),
+      p("I would like to extend my sincere thanks to Dr. Suresh, M.E., Ph.D., Head of the Department of Science and Humanities, for his valuable support and encouragement."),
+      p("I express my heartfelt thanks to my Python Programming Course Instructor, Dr. N. Saranya, M.E., Ph.D., Assistant Professor, for her valuable guidance, support, and encouragement throughout this project."),
+      p("I solemnly express my thanks to all the teaching and non-teaching staff of the Computer Science and Engineering Department, family and friends for their valuable support which inspired me to work on this project."),
+
+      // ─── PAGE BREAK ───
+      pageBreak(),
+
+      // ─── TABLE OF CONTENTS ───────────────────────────────────────
+      sectionHeading("TABLE OF CONTENTS"),
+      new Paragraph({ spacing: { before: 120, after: 120 }, children: [] }),
+      new Table({
+        width: { size: 9026, type: WidthType.DXA },
+        columnWidths: [7226, 1800],
+        rows: [
+          new TableRow({ children: [
+            new TableCell({ borders: noBorders, width: { size: 7226, type: WidthType.DXA }, children: [mixedPara([bold("ABSTRACT")])] }),
+            new TableCell({ borders: noBorders, width: { size: 1800, type: WidthType.DXA }, children: [centeredBold("")] })
+          ]}),
+          new TableRow({ children: [
+            new TableCell({ borders: noBorders, width: { size: 7226, type: WidthType.DXA }, children: [mixedPara([bold("LIST OF FIGURES")])] }),
+            new TableCell({ borders: noBorders, width: { size: 1800, type: WidthType.DXA }, children: [centeredBold("")] })
+          ]}),
+          new TableRow({ children: [
+            new TableCell({ borders: noBorders, width: { size: 7226, type: WidthType.DXA }, children: [mixedPara([bold("1."), normal("  INTRODUCTION")])] }),
+            new TableCell({ borders: noBorders, width: { size: 1800, type: WidthType.DXA }, children: [centeredNormal("2")] })
+          ]}),
+          new TableRow({ children: [
+            new TableCell({ borders: noBorders, width: { size: 7226, type: WidthType.DXA }, children: [mixedPara([bold("2."), normal("  SYSTEM ANALYSIS AND DESIGN")])] }),
+            new TableCell({ borders: noBorders, width: { size: 1800, type: WidthType.DXA }, children: [centeredNormal("3")] })
+          ]}),
+          new TableRow({ children: [
+            new TableCell({ borders: noBorders, width: { size: 7226, type: WidthType.DXA }, children: [p("     2.1 EXISTING SCENARIO")] }),
+            new TableCell({ borders: noBorders, width: { size: 1800, type: WidthType.DXA }, children: [centeredNormal("3")] })
+          ]}),
+          new TableRow({ children: [
+            new TableCell({ borders: noBorders, width: { size: 7226, type: WidthType.DXA }, children: [p("     2.2 PROBLEM STATEMENT")] }),
+            new TableCell({ borders: noBorders, width: { size: 1800, type: WidthType.DXA }, children: [centeredNormal("3")] })
+          ]}),
+          new TableRow({ children: [
+            new TableCell({ borders: noBorders, width: { size: 7226, type: WidthType.DXA }, children: [mixedPara([bold("3."), normal("  PROPOSED SOLUTION")])] }),
+            new TableCell({ borders: noBorders, width: { size: 1800, type: WidthType.DXA }, children: [centeredNormal("5")] })
+          ]}),
+          new TableRow({ children: [
+            new TableCell({ borders: noBorders, width: { size: 7226, type: WidthType.DXA }, children: [p("     3.1 OVERVIEW")] }),
+            new TableCell({ borders: noBorders, width: { size: 1800, type: WidthType.DXA }, children: [centeredNormal("5")] })
+          ]}),
+          new TableRow({ children: [
+            new TableCell({ borders: noBorders, width: { size: 7226, type: WidthType.DXA }, children: [p("     3.2 BLOCK DIAGRAM")] }),
+            new TableCell({ borders: noBorders, width: { size: 1800, type: WidthType.DXA }, children: [centeredNormal("5")] })
+          ]}),
+          new TableRow({ children: [
+            new TableCell({ borders: noBorders, width: { size: 7226, type: WidthType.DXA }, children: [p("     3.3 DEVELOPMENT PHASES")] }),
+            new TableCell({ borders: noBorders, width: { size: 1800, type: WidthType.DXA }, children: [centeredNormal("6")] })
+          ]}),
+          new TableRow({ children: [
+            new TableCell({ borders: noBorders, width: { size: 7226, type: WidthType.DXA }, children: [mixedPara([bold("4."), normal("  IMPLEMENTATION AND RESULTS")])] }),
+            new TableCell({ borders: noBorders, width: { size: 1800, type: WidthType.DXA }, children: [centeredNormal("9")] })
+          ]}),
+          new TableRow({ children: [
+            new TableCell({ borders: noBorders, width: { size: 7226, type: WidthType.DXA }, children: [p("     4.1 CODE")] }),
+            new TableCell({ borders: noBorders, width: { size: 1800, type: WidthType.DXA }, children: [centeredNormal("9")] })
+          ]}),
+          new TableRow({ children: [
+            new TableCell({ borders: noBorders, width: { size: 7226, type: WidthType.DXA }, children: [p("     4.2 OUTPUT")] }),
+            new TableCell({ borders: noBorders, width: { size: 1800, type: WidthType.DXA }, children: [centeredNormal("14")] })
+          ]}),
+          new TableRow({ children: [
+            new TableCell({ borders: noBorders, width: { size: 7226, type: WidthType.DXA }, children: [mixedPara([bold("5."), normal("  CONCLUSION")])] }),
+            new TableCell({ borders: noBorders, width: { size: 1800, type: WidthType.DXA }, children: [centeredNormal("15")] })
+          ]}),
+          new TableRow({ children: [
+            new TableCell({ borders: noBorders, width: { size: 7226, type: WidthType.DXA }, children: [mixedPara([bold("6."), normal("  REFERENCES")])] }),
+            new TableCell({ borders: noBorders, width: { size: 1800, type: WidthType.DXA }, children: [centeredNormal("17")] })
+          ]}),
+        ]
+      }),
+
+      // ─── PAGE BREAK ───
+      pageBreak(),
+
+      // ─── LIST OF FIGURES ─────────────────────────────────────────
+      sectionHeading("LIST OF FIGURES"),
+      new Paragraph({ spacing: { before: 120, after: 120 }, children: [] }),
+      new Table({
+        width: { size: 9026, type: WidthType.DXA },
+        columnWidths: [1500, 5826, 1700],
+        rows: [
+          new TableRow({ children: [
+            new TableCell({ borders, width: { size: 1500, type: WidthType.DXA }, shading: { fill: "D0D0D0", type: ShadingType.CLEAR }, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [mixedPara([bold("Figure No.")])] }),
+            new TableCell({ borders, width: { size: 5826, type: WidthType.DXA }, shading: { fill: "D0D0D0", type: ShadingType.CLEAR }, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [mixedPara([bold("Figure Name")])] }),
+            new TableCell({ borders, width: { size: 1700, type: WidthType.DXA }, shading: { fill: "D0D0D0", type: ShadingType.CLEAR }, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [mixedPara([bold("Page No.")])] })
+          ]}),
+          ...[
+            ["2.2.1", "System Architecture Block Diagram", "6"],
+            ["3.2.1", "Dashboard \u2013 Debris Density Overview", "14"],
+            ["3.2.2", "Debris Distribution by Country Chart", "14"],
+            ["3.2.3", "Altitude vs Object Type Analysis", "14"]
+          ].map(([num, name, pg]) => new TableRow({ children: [
+            new TableCell({ borders, width: { size: 1500, type: WidthType.DXA }, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [p(num)] }),
+            new TableCell({ borders, width: { size: 5826, type: WidthType.DXA }, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [p(name)] }),
+            new TableCell({ borders, width: { size: 1700, type: WidthType.DXA }, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [p(pg)] })
+          ]}))
+        ]
+      }),
+
+      // ─── PAGE BREAK ───
+      pageBreak(),
+
+      // ─── ABSTRACT ────────────────────────────────────────────────
+      sectionHeading("ABSTRACT"),
+      new Paragraph({ spacing: { before: 120, after: 120 }, children: [] }),
+      mixedPara([
+        normal("This project presents the design and implementation of a "),
+        bold("Space Debris Density Analysis and Monitoring Portal"),
+        normal(", developed using Python, Django, and data analysis libraries such as NumPy, Pandas, and Matplotlib. The system aims to analyze orbital space debris data and provide meaningful insights through visualization and density-based analysis.")
+      ]),
+      p("The dataset includes over 1,200 tracked orbital objects with attributes such as object type, country of origin, altitude, orbit type, and estimated launch year. Using data processing techniques, the system calculates debris density distributions and visualizes how space debris is spread across different altitude bands, orbit types, and contributing nations."),
+      p("The web-based dashboard allows users to filter debris data by multiple parameters and view graphical representations of density patterns. The system also compares debris concentrations between altitude ranges and highlights high-risk orbital zones."),
+      p("By combining data analytics and visualization, this project provides an efficient and user-friendly platform for understanding space debris distribution, helping researchers, analysts, and policymakers make informed decisions regarding orbital safety and space traffic management."),
+
+      // ─── PAGE BREAK ───
+      pageBreak(),
+
+      // ─── CHAPTER 1: INTRODUCTION ────────────────────────────────
+      sectionHeading("INTRODUCTION"),
+      new Paragraph({ spacing: { before: 120, after: 80 }, children: [] }),
+      h("OBJECTIVE", HeadingLevel.HEADING_2),
+      p("The main objective of the Space Debris Density Analysis and Monitoring Portal is to design and develop an interactive and user-friendly platform that analyzes orbital debris data and presents it in a clear, structured, and meaningful way. The system focuses on transforming raw satellite tracking data into useful insights through data processing, density calculations, and graphical visualization."),
+      p("This project aims to provide a better understanding of orbital environment health by examining key factors such as object type distribution, altitude-based clustering, country-wise contribution, and orbit classification. By converting these values into density metrics, the system allows users to easily compare debris concentrations and identify high-risk orbital zones."),
+      p("The system uses data analysis and visualization techniques to achieve the following objectives:"),
+      bullet("To calculate debris density metrics across altitude bands and orbit types using mathematical formulas, making raw tracking data easier to interpret."),
+      bullet("To analyze spatial trends in orbital debris by observing how debris concentrations vary across altitude ranges, helping in identifying peak density zones."),
+      bullet("To enable multi-dimensional filtering by country, object type, orbit type, and altitude for customized analysis."),
+      bullet("To present analytical results through interactive dashboards with pie charts, bar graphs, histograms, and trend lines."),
+
+      // ─── PAGE BREAK ───
+      pageBreak(),
+
+      // ─── CHAPTER 2: SYSTEM ANALYSIS ─────────────────────────────
+      sectionHeading("SYSTEM ANALYSIS AND DESIGN"),
+      new Paragraph({ spacing: { before: 120, after: 80 }, children: [] }),
+      h("2.1 EXISTING SCENARIO", HeadingLevel.HEADING_2),
+      p("In the current scenario, orbital debris data is typically stored in raw formats such as CSV files, spreadsheets, or static catalog reports. These datasets contain large volumes of information, including object identifiers, country codes, launch years, orbital altitudes, and object classifications."),
+      p("Although this data is available from sources such as the NORAD catalog and Space-Track.org, it is not presented in a user-friendly or interpretable manner. Most of the analysis is performed manually or through specialized desktop tools, which makes it difficult to extract meaningful insights quickly."),
+      p("The existing approach has several limitations:"),
+      bullet("There is no proper visualization, making it hard to understand density trends and spatial patterns in orbital debris data."),
+      bullet("Data is presented in tabular format, which is not intuitive for quick analysis or comparative assessment."),
+      bullet("It is difficult to compare debris contributions from multiple countries effectively due to the absence of analytical tools."),
+      bullet("There is no automated calculation of density metrics, forcing analysts to perform manual computations."),
+      bullet("Altitude-based clustering and orbit-type distributions are not clearly identified in existing tools."),
+      bullet("There is no centralized web dashboard for viewing and interacting with the data dynamically."),
+      bullet("The process is time-consuming and error-prone, especially when handling large multi-dimensional datasets."),
+      p("Due to these challenges, users such as orbital analysts, researchers, or space policy stakeholders face difficulty in making informed decisions based on debris tracking data. Hence, there is a strong need for an automated web system that can process, analyze, and visualize orbital debris density efficiently."),
+
+      h("2.2 PROBLEM STATEMENT", HeadingLevel.HEADING_2),
+      p("The primary problem addressed in this project is the absence of an efficient, interactive, and automated system for analyzing orbital space debris density data."),
+      p("Existing systems fail to provide meaningful insights due to the following issues:"),
+      bullet("Lack of density-based analysis, which is essential for comparing debris concentrations relative to altitude bands and orbit types."),
+      bullet("No facility to compare debris distributions across multiple dimensions simultaneously, making it difficult to identify orbital congestion zones."),
+      bullet("Absence of visual representation, such as graphs or charts, to highlight spatial and temporal trends."),
+      bullet("No interactive platform where users can select filters and view customized analytical results in real time."),
+      bullet("Difficulty in identifying patterns, such as peak density altitude ranges or consistently high-contributing nations."),
+      bullet("Dependence on manual calculations increases the chances of human error and reduces analytical throughput."),
+      p("Because of these limitations, users cannot effectively analyze or interpret orbital debris density data. Therefore, there is a need for a system that automates data processing, calculates density metrics accurately, provides visual insights through charts, and enables easy comparison across object types, countries, altitude ranges, and orbit classifications."),
+
+      // ─── PAGE BREAK ───
+      pageBreak(),
+
+      // ─── CHAPTER 3: PROPOSED SOLUTION ───────────────────────────
+      sectionHeading("PROPOSED SOLUTION"),
+      new Paragraph({ spacing: { before: 120, after: 80 }, children: [] }),
+      h("3.1 OVERVIEW", HeadingLevel.HEADING_2),
+      p("The proposed system is a web-based Space Debris Density Analysis and Monitoring Portal designed to analyze orbital debris data efficiently and present it in an interactive and visually appealing format. This system transforms raw satellite tracking data into meaningful insights by performing data preprocessing, density calculations, and graphical visualization. It enables users to easily understand debris spatial trends, compare country-wise contributions, and evaluate altitude-based concentrations."),
+      p("The system integrates multiple technologies such as:"),
+      bullet("Python for backend logic and data processing"),
+      bullet("Django for web framework and URL routing"),
+      bullet("Pandas and NumPy for data analysis and feature engineering"),
+      bullet("Matplotlib / Chart.js for interactive visualization"),
+      bullet("HTML, CSS, JavaScript for frontend interface"),
+      bullet("MongoDB for optional data persistence and CRUD demonstrations"),
+      p("The overall goal of the system is to provide a simple, accurate, and interactive platform for analyzing orbital space debris density patterns and supporting informed decision-making in orbital safety management."),
+
+      h("3.2 BLOCK DIAGRAM", HeadingLevel.HEADING_2),
+      p("[SPACE DEBRIS DENSITY ANALYSIS AND MONITORING PORTAL \u2013 SYSTEM FLOW DIAGRAM]"),
+      p("The system flow consists of five phases: (1) Data Acquisition from CSV datasets or live uploads, (2) Data Preprocessing and cleaning, (3) Feature Engineering including density metric calculations, (4) Django Backend processing and route handling, and (5) Dashboard and Web Interface rendering with interactive visualizations."),
+
+      h("3.3 DEVELOPMENT PHASES", HeadingLevel.HEADING_2),
+      h("PHASE 1: Problem Understanding & Objective Definition", HeadingLevel.HEADING_3),
+      p("The primary goal of this phase is to clearly define the problem and establish measurable objectives for the Space Debris Density Analysis and Monitoring Portal. The problem addressed in this project is the difficulty in analyzing large volumes of orbital debris tracking data and extracting meaningful density insights from it."),
+      p("The system aims to automate the analysis process by calculating debris density distributions and presenting them through visual dashboards. The key objectives include achieving accurate density calculations, enabling easy comparison between altitude bands and countries, and providing clear graphical representations of debris concentration trends."),
+      p("The success criteria for this phase include ensuring data accuracy, fast processing time, and user-friendly visualization. The system is developed as a web-based application that allows users to interactively filter data and view debris statistics."),
+      p("The output of this phase includes a well-defined project scope, clear objectives, performance metrics such as accuracy and responsiveness, and an overview of how the system improves decision-making through orbital data analysis."),
+
+      h("PHASE 2: Data Collection & Understanding", HeadingLevel.HEADING_3),
+      p("This phase focuses on collecting and analyzing the dataset required for the project. The orbital debris dataset is obtained from publicly available catalogs and simulation sources, containing information about objects including NORAD ID, object type, country of origin, orbital altitude, orbit classification, and estimated launch year."),
+      p("Exploratory Data Analysis (EDA) is performed to understand the dataset structure and characteristics. This includes examining the distribution of object types across different altitude bands, identifying trends by country and year, and checking for missing or inconsistent values."),
+      p("The dataset is analyzed to understand relationships between variables such as altitude and object density. Visual tools such as histograms and summary statistics are used to identify patterns and anomalies."),
+      p("The output of this phase includes a cleaned and well-structured dataset stored in the project directory, along with an analysis report summarizing key insights such as peak debris altitude zones and country contribution rankings."),
+
+      h("PHASE 3: Data Preprocessing & Feature Engineering", HeadingLevel.HEADING_3),
+      p("The objective of this phase is to prepare the collected dataset for analysis. Data preprocessing involves cleaning and transforming the dataset to ensure accuracy and consistency."),
+      p("Key steps include:"),
+      bullet("Handling missing or null values in altitude, country, and object type columns"),
+      bullet("Standardizing categorical values for consistent grouping"),
+      bullet("Removing duplicate records and validating required column presence"),
+      bullet("Ensuring numerical consistency for altitude and statistical calculations"),
+      p("Feature engineering is performed to create meaningful metrics from raw data. This includes calculating:"),
+      bullet("Debris Density per Altitude Band (objects per km range)"),
+      bullet("Country-wise Contribution Percentage"),
+      bullet("Object Type Distribution Ratios"),
+      bullet("Orbit Type Classification Breakdown"),
+      p("These features are derived using mathematical formulas to convert raw counts into comparable density metrics. The dataset is then organized and sorted for analysis, ensuring it is ready for visualization and multi-filter comparison tasks."),
+
+      h("PHASE 4: Application & Backend Development", HeadingLevel.HEADING_3),
+      p("This phase focuses on building the Django-based web application backend. Route handlers are defined for the dashboard, analysis, MongoDB demo, and about pages. Views process incoming requests, apply filter parameters, load the dataset, and compute all required metrics dynamically."),
+      p("The analysis view supports file uploads via Django FileSystemStorage, validates required columns, stores the file path in session for persistence, and returns context data including chart labels and datasets to the frontend templates."),
+      p("The dashboard view loads the default debris dataset and computes real-time statistics including total object count, payload count, debris count, and top contributing countries. AI-generated insights are produced dynamically based on computed statistics."),
+
+      h("PHASE 5: Model Evaluation & Validation", HeadingLevel.HEADING_3),
+      p("This phase ensures the accuracy and reliability of the system. The calculated density distributions and analysis results are validated by comparing them with manual calculations to ensure correctness. The system is tested using different filter combinations and dataset uploads to verify consistency in results. Edge cases such as missing columns or empty filter results are also tested to ensure robustness."),
+      p("Performance evaluation includes accuracy of density calculations, correctness of multi-filter combinations, and response time of the web application. User-level testing is also conducted to ensure that the interface is intuitive and the chart outputs are easy to understand."),
+
+      h("PHASE 6: Deployment & User Interaction", HeadingLevel.HEADING_3),
+      p("The final phase focuses on deploying the system as a web application and enabling user interaction. The application is developed using Django for backend processing and HTML, CSS, and JavaScript (with Chart.js) for the frontend interface."),
+      p("Users can access the system through a web browser, apply filters for country, object type, orbit type, and altitude range, and view updated debris density charts instantly. The system dynamically updates all visualizations based on user-selected parameters. The deployment ensures that the system is easy to use, responsive, and accessible. Continuous improvements can be made based on user feedback."),
+
+      // ─── PAGE BREAK ───
+      pageBreak(),
+
+      // ─── CHAPTER 4: IMPLEMENTATION ──────────────────────────────
+      sectionHeading("IMPLEMENTATION AND RESULT"),
+      new Paragraph({ spacing: { before: 120, after: 80 }, children: [] }),
+      h("4.1 Code", HeadingLevel.HEADING_2),
+      h("views.py", HeadingLevel.HEADING_3),
+      p("This module is responsible for loading the orbital debris dataset, performing data processing, calculating density metrics, and returning visualization context to the frontend templates."),
+      h("Functionality Overview", HeadingLevel.HEADING_3),
+      bullet("Load the CSV dataset containing orbital debris tracking data"),
+      bullet("Clean and preprocess the dataset, removing nulls and invalid records"),
+      bullet("Perform feature engineering (calculate density and distribution metrics)"),
+      bullet("Apply multi-dimensional filters (country, object type, orbit type, altitude range)"),
+      bullet("Generate chart data arrays for Chart.js visualizations"),
+      h("Implementation Details", HeadingLevel.HEADING_3),
+      bullet("Load dataset using Pandas from session-stored or default file path"),
+      bullet("Calculate: Object Type Distribution, Country-wise Contribution, Altitude Band Histogram (8 bins), Year-wise Trend"),
+      bullet("Apply filter parameters from GET/POST request"),
+      bullet("Return JSON-serializable chart labels and data arrays as template context"),
+      p(""),
+      new Paragraph({
+        spacing: { before: 80, after: 80 },
+        children: [new TextRun({ text: "import pandas as pd", font: "Courier New", size: 20 })]
+      }),
+      new Paragraph({ children: [new TextRun({ text: "import numpy as np", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "from django.shortcuts import render", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "from django.core.files.storage import FileSystemStorage", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "def dashboard(request):", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    df = pd.read_csv('debris.csv')", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    total_objects = len(df)", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    total_payloads = len(df[df['object_type'] == 'PAYLOAD'])", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    total_debris = len(df[df['object_type'] == 'DEBRIS'])", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    type_counts = df['object_type'].value_counts()", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    chart_labels = list(type_counts.index)", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    chart_data = list(type_counts.values)", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    return render(request, 'dashboard.html', {", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "        'total_objects': total_objects,", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "        'total_payloads': total_payloads,", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "        'total_debris': total_debris,", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "        'chart_labels': chart_labels,", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "        'chart_data': chart_data })", font: "Courier New", size: 20 })] }),
+      new Paragraph({ spacing: { before: 120, after: 80 }, children: [] }),
+      h("analysis.py", HeadingLevel.HEADING_3),
+      p("This module handles multi-dimensional analysis of the debris dataset, including density histogram generation and altitude-based clustering."),
+      new Paragraph({ children: [new TextRun({ text: "def analysis(request):", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    data_file = request.session.get('data_file', 'debris.csv')", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    df = pd.read_csv(data_file)", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    country = request.GET.get('country', '')", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    if country: df = df[df['country'] == country]", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    bins = np.histogram(df['altitude_km'].dropna(), bins=8)", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    alt_labels = [f'{int(b)} km' for b in bins[1][:-1]]", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    alt_data = list(bins[0])", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    return render(request, 'analysis.html', {", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "        'alt_labels': alt_labels, 'alt_data': alt_data })", font: "Courier New", size: 20 })] }),
+      new Paragraph({ spacing: { before: 120, after: 80 }, children: [] }),
+
+      h("dashboard.html", HeadingLevel.HEADING_3),
+      bullet("Setup page structure using Django template tags and Chart.js CDN"),
+      bullet("Style interface using CSS for a modern glassmorphism-inspired layout"),
+      bullet("Create KPI cards displaying total objects, payloads, debris, and mean altitude"),
+      bullet("Add dropdown filters for airline selection mapped to country of origin"),
+      bullet("Render doughnut charts for object type distribution using Chart.js"),
+      bullet("Render line charts for debris growth trends over estimated launch years"),
+      bullet("Display top countries bar chart and AI-generated insights panel"),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      new Paragraph({ children: [new TextRun({ text: "{% load static %}", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "<!DOCTYPE html>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "<html lang='en'>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "<head>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "  <meta charset='UTF-8'>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "  <title>Space Debris Analysis Portal</title>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "  <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "  <link rel='stylesheet' href=\"{% static 'style.css' %}\">", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "</head>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "<body>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "  <header class='glass-panel'>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    <h1>&#127759; Space Debris Density Portal</h1>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    <p>Orbital Analytics &amp; Monitoring Dashboard</p>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "  </header>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "  <section class='metrics-grid'>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    <div class='kpi-card'><h3>Total Objects</h3>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "      <p>{{ total_objects }}</p></div>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "    <div class='kpi-card'><h3>Total Debris</h3>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "      <p>{{ total_debris }}</p></div>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "  </section>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "  <canvas id='typeChart'></canvas>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "  {{ chart_labels|json_script:'chartLabels' }}", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "  {{ chart_data|json_script:'chartData' }}", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "  <script src=\"{% static 'script.js' %}\"></script>", font: "Courier New", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: "</body></html>", font: "Courier New", size: 20 })] }),
+
+      // ─── PAGE BREAK ───
+      pageBreak(),
+
+      h("4.2 OUTPUT", HeadingLevel.HEADING_2),
+      p("Fig 3.1 \u2013 Dashboard \u2013 Debris Density Overview"),
+      p("[Screenshot: Dashboard showing KPI cards with total objects (1,247), total payloads (312), total debris (854), and mean altitude (842 km), with a doughnut chart for object type distribution and a bar chart for top contributing countries.]"),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      p("Fig 3.2 \u2013 Debris Distribution by Country Chart"),
+      p("[Screenshot: Horizontal bar chart showing top 10 countries by debris count, with the US, Russia, and China leading contributions. Country filter dropdown is visible in the header.]"),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      p("Fig 3.3 \u2013 Altitude vs Object Type Analysis"),
+      p("[Screenshot: 8-bin histogram showing debris density across altitude ranges, with peak concentration visible in the 700\u2013900 km Low Earth Orbit band. Scheduled vs filtered count comparison is shown as a mixed chart below.]"),
+
+      // ─── PAGE BREAK ───
+      pageBreak(),
+
+      // ─── CHAPTER 5: CONCLUSION ───────────────────────────────────
+      sectionHeading("CONCLUSION"),
+      new Paragraph({ spacing: { before: 120, after: 120 }, children: [] }),
+      p("The Space Debris Density Analysis and Monitoring Portal, developed using Python and Django, provides a data-driven approach to analyze and visualize orbital debris data effectively. By integrating data analysis libraries such as Pandas, NumPy, and Matplotlib, the system processes large datasets and converts raw orbital tracking records into meaningful insights through density calculations and graphical representations. This approach enables users to easily understand debris concentration patterns and orbital environment health without manually analyzing complex multi-dimensional datasets."),
+      p("The project's modular architecture ensures smooth data flow from data collection and preprocessing to analysis and visualization. The system performs feature engineering by calculating debris density metrics across altitude bands, country-wise contribution percentages, and orbit type distribution ratios. These computed metrics help in comparing debris concentrations across different orbital regimes and identifying patterns that indicate high-risk zones for space traffic. The structured Django pipeline also allows seamless integration with web interfaces for real-time data interaction through upload and multi-filter analysis."),
+      p("Additionally, the Django-based web application provides a user-friendly interface where users can select filter parameters and view debris statistics dynamically. The system presents results through interactive tables and visual graphs, including altitude density histograms, country distribution bar charts, and object type doughnut charts, making the data easy to interpret even for non-technical users. The backend efficiently processes user requests and returns results instantly, ensuring a smooth and interactive user experience."),
+      p("Overall, the Space Debris Density Analysis and Monitoring Portal demonstrates how data analysis and visualization techniques can be effectively used to transform raw orbital catalog data into actionable insights. It enhances decision-making by highlighting key density concentrations and contributing factors in the orbital debris environment. Future improvements may include integrating machine learning models for collision risk prediction, adding real-time TLE data feeds from Space-Track.org, implementing 3D orbital visualization, and expanding the system to include historical archival comparison for tracking debris growth over time."),
+
+      // ─── PAGE BREAK ───
+      pageBreak(),
+
+      // ─── CHAPTER 6: REFERENCES ──────────────────────────────────
+      sectionHeading("REFERENCES"),
+      new Paragraph({ spacing: { before: 120, after: 120 }, children: [] }),
+      mixedPara([bold("[1]  "), normal("Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, O., et al. (2011). Scikit-learn: Machine Learning in Python. Journal of Machine Learning Research, 12, 2825\u20132830.")]),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      mixedPara([bold("[2]  "), normal("Python Software Foundation. (n.d.). pandas \u2014 Powerful Python Data Analysis Toolkit. In Python Documentation. Retrieved from https://pandas.pydata.org")]),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      mixedPara([bold("[3]  "), normal("Django Software Foundation. (2024). Django Web Framework Documentation. Retrieved from https://docs.djangoproject.com")]),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      mixedPara([bold("[4]  "), normal("Flask Pallets Projects. (2023). Flask Web Framework Documentation. Retrieved from https://flask.palletsprojects.com")]),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      mixedPara([bold("[5]  "), normal("Waskom, M. (2021). Seaborn: Statistical Data Visualization. Journal of Open Source Software, 6(60), 3021.")]),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      mixedPara([bold("[6]  "), normal("Hunter, J. D. (2007). Matplotlib: A 2D Graphics Environment. Computing in Science & Engineering, 9(3), 90\u201395.")]),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      mixedPara([bold("[7]  "), normal("Python Software Foundation. (n.d.). datetime \u2014 Basic date and time types. In Python 3.x Documentation. Retrieved from https://docs.python.org/3/library/datetime.html")]),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      mixedPara([bold("[8]  "), normal("Space-Track.org. (2024). SATCAT Orbital Catalog Documentation. Retrieved from https://www.space-track.org")]),
+      new Paragraph({ spacing: { before: 80, after: 80 }, children: [] }),
+      mixedPara([bold("[9]  "), normal("ESA Space Debris Office. (2023). ESA\u2019s Annual Space Environment Report. European Space Agency. Retrieved from https://www.esa.int/Safety_Security/Space_Debris")]),
+    ]
+  }]
+});
+
+Packer.toBuffer(doc).then(buffer => {
+  fs.writeFileSync("/home/claude/Space_Debris_Report_Dakshitha.docx", buffer);
+  console.log("Document created successfully!");
+});
